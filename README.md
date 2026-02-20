@@ -159,7 +159,7 @@ The initial HLD showed 5 kernel services + 5 agents + a generic "Shared Message 
 
 | Component | Status |
 |-----------|--------|
-| Architecture (TDD v5.1) | ✅ Complete — 120+ pages |
+| Architecture (TDD v5.1) | ✅ Complete ~ 4600 + lines |
 | 8 GAPs identified and resolved | ✅ All closed |
 | Sequence Diagrams (5 scenarios) | ✅ Complete — Addendum C.1–C.4 |
 | ADR-001÷004 | ✅ Complete |

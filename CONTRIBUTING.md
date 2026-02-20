@@ -35,7 +35,7 @@ The full Technical Design Document (TDD v5.1, 120+ pages) is in `docs/`. Before 
 
 ### 1. Read First
 
-- `docs/2026-02-17_AI_OS_TDD_v5.1_LAST.pdf` — full specification
+- `docs/AI_OS_TDD_v5_1.md` — full specification
 - `docs/ADR/` — architecture decisions (understand *why* before proposing alternatives)
 
 ### 2. Open a Discussion Issue

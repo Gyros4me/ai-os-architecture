@@ -192,8 +192,8 @@ Code (when published): Apache 2.0
 ---
 ## Author
 Alessandro La Gamba
-Senior System Engineer | AI/ML Researcher
-25+ years experience || distributed systems and edge AI
+Senior System Engineer | AI/ML Researcher |
+25+ years experience | distributed systems and edge AI
 
 ---
 

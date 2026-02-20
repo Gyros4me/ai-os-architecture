@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI OS — Magellano Architecture v5.1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;600&display=swap');
+
+:root {
+  --bg: #030508;
+  --surface: #080c14;
+  --border: #0f1826;
+  --border2: #162035;
+  --cyan: #00d4ff;
+  --cyan2: #00a8cc;
+  --green: #00ff94;
+  --amber: #ffb340;
+  --rose: #ff4060;
+  --violet: #a855f7;
+  --violet2: #7c3aed;
+  --blue: #3b82f6;
+  --teal: #14b8a6;
+  --pink: #ec4899;
+  --white: #f0f4ff;
+  --dim: #4a5568;
+  --dim2: #2d3748;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 32px;
+  min-width: 1400px;
+}
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  margin-bottom: 36px;
+  position: relative;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan2), transparent);
+  opacity: 0.3;
+}
+.header-inner {
+  display: inline-block;
+  background: var(--bg);
+  padding: 0 32px;
+  position: relative;
+}
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--cyan);
+  text-shadow: 0 0 40px rgba(0,212,255,0.3);
+}
+.subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.version-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 12px;
+  border: 1px solid var(--cyan2);
+  border-radius: 20px;
+  font-size: 10px;
+  color: var(--cyan);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em;
+}
+
+/* ── GRID PRINCIPALE ── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr 200px;
+  grid-template-rows: auto auto auto;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ── BOX BASE ── */
+.box {
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  padding: 14px 16px;
+  background: var(--surface);
+  position: relative;
+}
+.box-title {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.box-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.box-sub {
+  font-size: 9px;
+  color: var(--dim);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.6;
+}
+
+/* ── UI BOX ── */
+.ui-box {
+  border-color: #1a3a1a;
+  background: linear-gradient(135deg, #050f05, #080f08);
+}
+.ui-box .box-title { color: var(--green); }
+.ui-box .box-label { color: var(--green); }
+
+/* ── KERNEL (centro) ── */
+.kernel-box {
+  border-color: #1a2a40;
+  background: linear-gradient(135deg, #060c18, #090f1f);
+  border-width: 1.5px;
+  border-color: var(--cyan2);
+  box-shadow: 0 0 40px rgba(0,168,204,0.08), inset 0 0 40px rgba(0,168,204,0.02);
+}
+.kernel-title {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border2);
+}
+.kernel-subtitle {
+  text-align: center;
+  font-size: 9px;
+  color: var(--dim);
+  margin-bottom: 16px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── KERNEL SERVICES GRID ── */
+.services-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.service-chip {
+  background: rgba(0,212,255,0.04);
+  border: 1px solid rgba(0,212,255,0.15);
+  border-radius: 6px;
+  padding: 8px 6px;
+  text-align: center;
+}
+.service-chip .s-name {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--cyan);
+  display: block;
+  margin-bottom: 2px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.service-chip .s-sub {
+  font-size: 8px;
+  color: var(--dim);
+  display: block;
+}
+
+/* ── ORCHESTRATOR ── */
+.orchestrator {
+  background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(124,58,237,0.04));
+  border: 1px solid rgba(168,85,247,0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.orch-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--violet);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.orch-sub {
+  font-size: 8px;
+  color: var(--dim);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px;
+}
+
+/* ── AGENT SWARM ── */
+.swarm-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.agent-chip {
+  background: rgba(168,85,247,0.05);
+  border: 1px solid rgba(168,85,247,0.2);
+  border-radius: 6px;
+  padding: 8px 4px;
+  text-align: center;
+}
+.agent-chip .a-name {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--violet);
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+}
+.agent-chip .a-role {
+  font-size: 7.5px;
+  color: var(--dim);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ── 3 BUS ── */
+.bus-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.bus-chip {
+  border-radius: 5px;
+  padding: 7px 8px;
+  text-align: center;
+}
+.bus-chip.b1 { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.25); }
+.bus-chip.b2 { background: rgba(20,184,166,0.06); border: 1px solid rgba(20,184,166,0.25); }
+.bus-chip.b3 { background: rgba(255,179,64,0.06); border: 1px solid rgba(255,179,64,0.25); }
+.bus-chip .b-proto { font-size: 8px; font-weight: 700; font-family: 'JetBrains Mono', monospace; display: block; }
+.bus-chip.b1 .b-proto { color: var(--blue); }
+.bus-chip.b2 .b-proto { color: var(--teal); }
+.bus-chip.b3 .b-proto { color: var(--amber); }
+.bus-chip .b-name { font-size: 7.5px; color: var(--dim); display: block; margin-top: 2px; }
+.bus-chip .b-latency { font-size: 7px; color: var(--dim); display: block; margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
+
+/* ── QLORA LOOP ── */
+.qlora-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(0,255,148,0.03);
+  border: 1px solid rgba(0,255,148,0.15);
+  border-radius: 6px;
+  padding: 8px 12px;
+  gap: 8px;
+}
+.ql-step {
+  text-align: center;
+  flex: 1;
+}
+.ql-step .ql-name { font-size: 8px; font-weight: 600; color: var(--green); font-family: 'JetBrains Mono', monospace; display: block; }
+.ql-step .ql-sub { font-size: 7.5px; color: var(--dim); display: block; }
+.ql-arrow { color: var(--dim); font-size: 10px; flex-shrink: 0; }
+.ql-label {
+  font-size: 7.5px;
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  text-align: center;
+  margin-top: 5px;
+  letter-spacing: 0.1em;
+}
+
+/* ── HARDWARE BOX ── */
+.hw-box {
+  border-color: rgba(255,64,96,0.25);
+  background: linear-gradient(135deg, #0f0508, #120608);
+}
+.hw-box .box-title { color: var(--rose); }
+.hw-box .box-label { color: var(--rose); }
+
+/* ── GLOBAL STATE ── */
+.state-box {
+  border-color: rgba(255,179,64,0.25);
+  background: linear-gradient(135deg, #0f0a03, #120c04);
+}
+.state-box .box-title { color: var(--amber); }
+.state-box .box-label { color: var(--amber); }
+
+/* ── SECURITY ── */
+.sec-box {
+  border-color: rgba(236,72,153,0.25);
+  background: linear-gradient(135deg, #0f050a, #12060c);
+}
+.sec-box .box-title { color: var(--pink); }
+.sec-box .box-label { color: var(--pink); }
+
+/* ── OBSERVABILITY ── */
+.obs-box {
+  border-color: rgba(20,184,166,0.25);
+  background: linear-gradient(135deg, #030f0e, #04110f);
+}
+.obs-box .box-title { color: var(--teal); }
+.obs-box .box-label { color: var(--teal); }
+
+/* ── MULTI-TENANCY ── */
+.mt-box {
+  border-color: rgba(59,130,246,0.25);
+  background: linear-gradient(135deg, #030810, #040a12);
+}
+.mt-box .box-title { color: var(--blue); }
+.mt-box .box-label { color: var(--blue); }
+
+/* ── AGENT REGISTRY ── */
+.reg-box {
+  border-color: rgba(0,212,255,0.3);
+  background: rgba(0,212,255,0.03);
+  border-style: dashed;
+}
+.reg-box .box-title { color: var(--cyan); }
+
+/* ── BOTTOM ROW ── */
+.bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ── CONNECTORS ── */
+.conn-h {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dim2);
+  font-size: 16px;
+}
+
+/* ── STATUS ROW ── */
+.status-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.status-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  border: 1px solid;
+}
+.status-chip.ok { border-color: rgba(0,255,148,0.3); color: var(--green); background: rgba(0,255,148,0.04); }
+.status-chip.wip { border-color: rgba(255,179,64,0.3); color: var(--amber); background: rgba(255,179,64,0.04); }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot.ok { background: var(--green); }
+.dot.wip { background: var(--amber); }
+
+/* ── FOOTER LEGEND ── */
+.legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  color: var(--dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+.leg-dot {
+  width: 8px; height: 8px; border-radius: 2px;
+}
+
+/* ── MAGELLANO STRIP ── */
+.magellano-strip {
+  background: linear-gradient(135deg, rgba(168,85,247,0.06), rgba(0,212,255,0.04));
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 8px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.mag-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--violet);
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+}
+.mag-divider {
+  width: 1px;
+  height: 30px;
+  background: var(--border2);
+  flex-shrink: 0;
+}
+.mag-specs {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.mag-spec .sp-label { font-size: 7.5px; color: var(--dim); display: block; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.1em; }
+.mag-spec .sp-val { font-size: 11px; font-weight: 600; color: var(--white); display: block; margin-top: 2px; }
+.mag-spec .sp-val.cyan { color: var(--cyan); }
+.mag-spec .sp-val.violet { color: var(--violet); }
+.mag-spec .sp-val.green { color: var(--green); }
+
+/* ── GAPS RESOLVED ROW ── */
+.gaps-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.gap-badge {
+  font-size: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: rgba(0,255,148,0.06);
+  border: 1px solid rgba(0,255,148,0.2);
+  color: var(--green);
+}
+
+/* ── MIDDLE SECTION ── */
+.mid-section {
+  display: grid;
+  grid-template-columns: 160px 1fr 160px;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: stretch;
+}
+.mid-left, .mid-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tag-new {
+  display: inline-block;
+  background: rgba(0,255,148,0.12);
+  color: var(--green);
+  font-size: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px solid rgba(0,255,148,0.25);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.mini-chip {
+  font-size: 8px;
+  color: var(--dim);
+  font-family: 'JetBrains Mono', monospace;
+  display: block;
+  padding: 2px 0;
+}
+.mini-chip::before {
+  content: '▸ ';
+  color: var(--dim2);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="title">AI OS — MAGELLANO ARCHITECTURE</div>
+    <div class="subtitle">Agent Swarm Embedded Operating System · All GAPs Resolved</div>
+    <div class="version-badge">TDD v5.1 · 2026-02-17 · Rust Kernel + Swift Inference</div>
+  </div>
+</div>
+
+<!-- GAPS RESOLVED -->
+<div class="gaps-row">
+  <div class="gap-badge">✓ GAP-01 Observability</div>
+  <div class="gap-badge">✓ GAP-03 Data Pipeline</div>
+  <div class="gap-badge">✓ GAP-04 CI/CD Deploy</div>
+  <div class="gap-badge">✓ GAP-05 Multi-Tenancy</div>
+  <div class="gap-badge">✓ GAP-10 Accessibility</div>
+  <div class="gap-badge">✓ GAP-11 3-Tier Taxonomy</div>
+  <div class="gap-badge">✓ GAP-12 Magellano Boundary</div>
+  <div class="gap-badge">✓ GAP-13 Inference HAL</div>
+</div>
+
+<!-- MAGELLANO ENGINE STRIP -->
+<div class="magellano-strip">
+  <div class="mag-name">MAGELLANO</div>
+  <div class="mag-divider"></div>
+  <div class="mag-specs">
+    <div class="mag-spec">
+      <span class="sp-label">Model</span>
+      <span class="sp-val violet">3.3B params</span>
+    </div>
+    <div class="mag-spec">
+      <span class="sp-label">Runtime</span>
+      <span class="sp-val cyan">Swift + Metal</span>
+    </div>
+    <div class="mag-spec">
+      <span class="sp-label">Inference latency</span>
+      <span class="sp-val green">50–100ms</span>
+    </div>
+    <div class="mag-spec">
+      <span class="sp-label">Quantization</span>
+      <span class="sp-val">NF4 · 6.6GB→1.7GB</span>
+    </div>
+    <div class="mag-spec">
+      <span class="sp-label">Fine-tuning</span>
+      <span class="sp-val">QLoRA nightly · rank 16</span>
+    </div>
+    <div class="mag-spec">
+      <span class="sp-label">Hot-swap</span>
+      <span class="sp-val green">Zero-downtime</span>
+    </div>
+    <div class="mag-spec">
+      <span class="sp-label">A/B gate</span>
+      <span class="sp-val">≥5% improvement req.</span>
+    </div>
+    <div class="mag-spec">
+      <span class="sp-label">Platform</span>
+      <span class="sp-val">Apple Silicon native</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN: UI / KERNEL / HW -->
+<div class="main-grid">
+
+  <!-- LEFT COL: UI + STATE -->
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    
+    <!-- UI -->
+    <div class="box ui-box">
+      <div class="box-title">User Interface</div>
+      <div class="box-label">I/O Layer</div>
+      <div class="box-sub" style="margin-top:6px;">
+        CLI · GUI · Voice · API<br>
+        Interface Agent handles<br>
+        normalize + sanitize (15ms)
+      </div>
+    </div>
+
+    <!-- GLOBAL STATE -->
+    <div class="box state-box" style="flex:1;">
+      <div class="box-title">Global State <span class="tag-new">v5.1</span></div>
+      <div class="box-label" style="font-size:11px;margin-bottom:6px;">4-Layer Memory</div>
+      <span class="mini-chip">Working Memory (Redis)</span>
+      <span class="mini-chip">Vector Store (FAISS)</span>
+      <span class="mini-chip">Knowledge Graph (Neo4j)</span>
+      <span class="mini-chip">Persistent Store (MongoDB)</span>
+    </div>
+
+    <!-- AGENT REGISTRY -->
+    <div class="box reg-box">
+      <div class="box-title">Agent Registry <span class="tag-new">GAP-11</span></div>
+      <div class="box-sub" style="margin-top:4px;">
+        Dynamic spawning · Gossip protocol<br>
+        Tier 1→2→3 taxonomy<br>
+        Cache hit: ~5ms lookup
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CENTER: KERNEL -->
+  <div class="box kernel-box">
+    <div class="kernel-title">⬡ AI OS KERNEL <span style="font-size:8px;font-weight:300;letter-spacing:0.1em;color:var(--dim);">(RUST · TOKIO · ASYNC)</span></div>
+
+    <!-- Kernel Services -->
+    <div class="services-row">
+      <div class="service-chip">
+        <span class="s-name">TASK SCH.</span>
+        <span class="s-sub">Priority Queue<br>Deadline Mgr</span>
+      </div>
+      <div class="service-chip">
+        <span class="s-name">RESOURCE</span>
+        <span class="s-sub">GPU/CPU Pool<br>Memory Alloc</span>
+      </div>
+      <div class="service-chip">
+        <span class="s-name">CONTEXT</span>
+        <span class="s-sub">Session Store<br>KV Cache Mgmt</span>
+      </div>
+      <div class="service-chip">
+        <span class="s-name">MODEL LOAD</span>
+        <span class="s-sub">Hot-Swap<br>Version Ctrl</span>
+      </div>
+      <div class="service-chip">
+        <span class="s-name">TOOL REG.</span>
+        <span class="s-sub">Function Call<br>API Gateway</span>
+      </div>
+    </div>
+
+    <!-- Orchestrator -->
+    <div class="orchestrator">
+      <div class="orch-name">⬡ Agent Swarm Orchestrator</div>
+      <div class="orch-sub">Agent Factory · Load Balancer · Message Router · Health Monitor · DAG Executor</div>
+    </div>
+
+    <!-- Agent Swarm -->
+    <div class="swarm-row">
+      <div class="agent-chip">
+        <span class="a-name">PLANNER</span>
+        <span class="a-role">DAG generation<br>Goal decomp.<br>~180ms</span>
+      </div>
+      <div class="agent-chip">
+        <span class="a-name">EXECUTOR</span>
+        <span class="a-role">Code gen<br>Tool use<br>Sandbox exec</span>
+      </div>
+      <div class="agent-chip">
+        <span class="a-name">CRITIC</span>
+        <span class="a-role">Quality ≥0.85<br>5-dim eval<br>Veto power</span>
+      </div>
+      <div class="agent-chip">
+        <span class="a-name">MEMORY</span>
+        <span class="a-role">RAG retrieval<br>FAISS+rerank<br>~80ms</span>
+      </div>
+      <div class="agent-chip">
+        <span class="a-name">INTERFACE</span>
+        <span class="a-role">I/O handling<br>FIPA-ACL<br>Format output</span>
+      </div>
+    </div>
+
+    <!-- 3 Bus -->
+    <div class="bus-row">
+      <div class="bus-chip b1">
+        <span class="b-proto">BUS 1 · gRPC/Protobuf</span>
+        <span class="b-name">Controllo · Task Dispatch · Lifecycle</span>
+        <span class="b-latency">1–10ms · mTLS + JWT</span>
+      </div>
+      <div class="bus-chip b2">
+        <span class="b-proto">BUS 2 · NATS/JSON-RPC</span>
+        <span class="b-name">Dati · Results · Events · Logs</span>
+        <span class="b-latency">10–100ms · Pub/Sub fan-out</span>
+      </div>
+      <div class="bus-chip b3">
+        <span class="b-proto">BUS 3 · Shared Memory</span>
+        <span class="b-name">Tensori · Embeddings · KV-Cache</span>
+        <span class="b-latency">&lt;1µs · Zero-copy DMA</span>
+      </div>
+    </div>
+
+    <!-- QLoRA Loop -->
+    <div class="qlora-strip">
+      <div class="ql-step">
+        <span class="ql-name">FEEDBACK BUFFER</span>
+        <span class="ql-sub">Session errors<br>+ critic scores</span>
+      </div>
+      <span class="ql-arrow">→</span>
+      <div class="ql-step">
+        <span class="ql-name">NIGHTLY BATCH</span>
+        <span class="ql-sub">Dataset build<br>quality filter</span>
+      </div>
+      <span class="ql-arrow">→</span>
+      <div class="ql-step">
+        <span class="ql-name">QLoRA TRAIN</span>
+        <span class="ql-sub">3 epochs · rank 16<br>~45min · NF4</span>
+      </div>
+      <span class="ql-arrow">→</span>
+      <div class="ql-step">
+        <span class="ql-name">A/B GATE</span>
+        <span class="ql-sub">≥5% improvement<br>required to deploy</span>
+      </div>
+      <span class="ql-arrow">→</span>
+      <div class="ql-step">
+        <span class="ql-name">HOT-SWAP</span>
+        <span class="ql-sub">Magellano v(N+1)<br>zero-downtime</span>
+      </div>
+    </div>
+    <div class="ql-label">⟳ SELF-IMPROVEMENT LOOP — Nightly QLoRA · Model retrains on its own errors while you sleep</div>
+
+  </div>
+
+  <!-- RIGHT COL: HW + SEC + OBS + MT -->
+  <div style="display:flex;flex-direction:column;gap:12px;">
+
+    <!-- HARDWARE -->
+    <div class="box hw-box">
+      <div class="box-title">Hardware Layer</div>
+      <div class="box-label">Metal / CoreML</div>
+      <div class="box-sub" style="margin-top:6px;">
+        CPU · GPU · NPU<br>
+        Apple Silicon native<br>
+        Storage · Network
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="box sec-box">
+      <div class="box-title">Security <span class="tag-new">GAP resolved</span></div>
+      <div class="box-label" style="font-size:11px;margin-bottom:6px;">Zero Trust</div>
+      <span class="mini-chip">ED25519 msg signing</span>
+      <span class="mini-chip">Sandbox Docker/Wasm</span>
+      <span class="mini-chip">4-layer prompt inject.</span>
+      <span class="mini-chip">OAuth·JWT·mTLS</span>
+    </div>
+
+    <!-- OBSERVABILITY -->
+    <div class="box obs-box">
+      <div class="box-title">Observability <span class="tag-new">GAP-01</span></div>
+      <div class="box-label" style="font-size:11px;margin-bottom:6px;">Three Pillars</div>
+      <span class="mini-chip">Prometheus+Thanos</span>
+      <span class="mini-chip">OTel+Jaeger traces</span>
+      <span class="mini-chip">Loki logs · Grafana</span>
+    </div>
+
+    <!-- MULTI-TENANCY -->
+    <div class="box mt-box">
+      <div class="box-title">Multi-Tenancy <span class="tag-new">GAP-05</span></div>
+      <div class="box-label" style="font-size:10px;margin-bottom:6px;">Free·Pro·Enterprise</div>
+      <span class="mini-chip">NS isolation per tenant</span>
+      <span class="mini-chip">Rate limiting + quotas</span>
+      <span class="mini-chip">Event-driven billing</span>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- E2E LATENCY STRIP -->
+<div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:12px 20px;margin-bottom:16px;display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;">
+  <div style="font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace;margin-right:8px;">E2E HAPPY PATH ~4.8s:</div>
+  
+  <div style="text-align:center;padding:4px 10px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:4px;">
+    <div style="font-size:8px;color:var(--cyan);font-family:'JetBrains Mono',monospace;">Input Parse</div>
+    <div style="font-size:9px;color:var(--white);font-weight:600;">15ms</div>
+  </div>
+  <div style="color:var(--dim2)">→</div>
+  <div style="text-align:center;padding:4px 10px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:4px;">
+    <div style="font-size:8px;color:var(--cyan);font-family:'JetBrains Mono',monospace;">RAG Retrieval</div>
+    <div style="font-size:9px;color:var(--white);font-weight:600;">80ms</div>
+  </div>
+  <div style="color:var(--dim2)">→</div>
+  <div style="text-align:center;padding:4px 10px;background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:4px;">
+    <div style="font-size:8px;color:var(--violet);font-family:'JetBrains Mono',monospace;">Planning (DAG)</div>
+    <div style="font-size:9px;color:var(--white);font-weight:600;">180ms</div>
+  </div>
+  <div style="color:var(--dim2)">→</div>
+  <div style="text-align:center;padding:4px 10px;background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:4px;">
+    <div style="font-size:8px;color:var(--violet);font-family:'JetBrains Mono',monospace;">Magellano Inf.</div>
+    <div style="font-size:9px;color:var(--white);font-weight:600;">50–100ms</div>
+  </div>
+  <div style="color:var(--dim2)">→</div>
+  <div style="text-align:center;padding:4px 10px;background:rgba(0,255,148,0.04);border:1px solid rgba(0,255,148,0.15);border-radius:4px;">
+    <div style="font-size:8px;color:var(--green);font-family:'JetBrains Mono',monospace;">Critic Validate</div>
+    <div style="font-size:9px;color:var(--white);font-weight:600;">120ms</div>
+  </div>
+  <div style="color:var(--dim2)">→</div>
+  <div style="text-align:center;padding:4px 10px;background:rgba(0,255,148,0.04);border:1px solid rgba(0,255,148,0.15);border-radius:4px;">
+    <div style="font-size:8px;color:var(--green);font-family:'JetBrains Mono',monospace;">Exec + Output</div>
+    <div style="font-size:9px;color:var(--white);font-weight:600;">~4.3s</div>
+  </div>
+  <div style="color:var(--dim2)">→</div>
+  <div style="text-align:center;padding:4px 10px;background:rgba(0,212,255,0.08);border:1.5px solid var(--cyan2);border-radius:4px;">
+    <div style="font-size:8px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-weight:700;">TOTAL E2E</div>
+    <div style="font-size:10px;color:var(--cyan);font-weight:700;">~4.8s</div>
+  </div>
+</div>
+
+<!-- STATUS -->
+<div class="status-row">
+  <div class="status-chip ok"><div class="dot ok"></div>Architecture TDD v5.1 · 120+ pages · Complete</div>
+  <div class="status-chip ok"><div class="dot ok"></div>Sequence Diagrams · Addendum C.1–C.4</div>
+  <div class="status-chip ok"><div class="dot ok"></div>ADR-001÷004 · All decisions documented</div>
+  <div class="status-chip ok"><div class="dot ok"></div>8 GAPs resolved</div>
+  <div class="status-chip wip"><div class="dot wip"></div>Rust Kernel PoC · In progress</div>
+  <div class="status-chip wip"><div class="dot wip"></div>Magellano Swift inference · Design phase</div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend" style="margin-top:16px;">
+  <div class="leg-item"><div class="leg-dot" style="background:var(--cyan);"></div>AI OS Kernel (Rust)</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--violet);"></div>Agent Swarm</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--amber);"></div>Global State</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--green);"></div>Learning Loop</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--rose);"></div>Hardware/Metal</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--pink);"></div>Security (Zero Trust)</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--teal);"></div>Observability</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--blue);"></div>Multi-Tenancy</div>
+  <div class="leg-item"><div class="leg-dot" style="background:rgba(0,212,255,0.4);border:1px dashed var(--cyan);width:8px;height:8px;"></div>Agent Registry (new)</div>
+</div>
+
+<div style="text-align:center;margin-top:20px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);">
+  AI OS MAGELLANO · TDD v5.1 · 2026-02-17 · Alessandro La Gamba · <span style="color:var(--cyan2)">github.com/Gyros4me/ai-os-architecture</span>
+</div>
+
+</body>
+</html>

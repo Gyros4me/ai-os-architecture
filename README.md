@@ -190,5 +190,13 @@ Architecture documentation: Creative Commons BY-SA 4.0
 Code (when published): Apache 2.0
 
 ---
+---
+## Author
+Alessandro La Gamba
+Senior System Engineer | AI/ML Researcher
+25+ years experience || distributed systems and edge AI
 
+---
+
+Version: v1 | Status: DEV | February 2026
 *"The best prompt engineering is no prompt engineering."*

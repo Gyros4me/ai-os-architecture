@@ -8,6 +8,8 @@ An AI-native Operating System that treats agents as kernel processes, not chat p
 
 ## Architecture Overview — TDD v5.1
 
+<img width="1310" height="617" alt="image" src="https://github.com/user-attachments/assets/ec33f241-409f-47cf-9048-8f937e0a78a2" />
+
 ![AI OS Magellano Architecture v5.1](./diagrams/ai_os_manifesto_v51.html)
 
 *Full architecture — all GAPs resolved. Agent Registry, 3-Bus communication, Observability, Zero Trust Security, Multi-Tenancy, and the QLoRA self-improvement loop — all integrated.*

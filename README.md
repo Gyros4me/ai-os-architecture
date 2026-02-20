@@ -59,22 +59,22 @@ The last row is the gap that matters most. The manual approach requires a human 
 │                      AI OS KERNEL (Rust)                │
 │                                                         │
 │   ┌─────────────┐    ┌──────────────────────────────┐   │
-│   │Task Scheduler│    │   Agent Swarm Orchestrator   │   │
-│   │Resource Mgr │◄──►│  Planner · Executor · Critic  │   │
+│   │Task Scheduler│   │   Agent Swarm Orchestrator   │   │
+│   │Resource Mgr │◄──►│  Planner · Executor · Critic     │
 │   │Context Mgr  │    │  Memory  · Interface Agent   │   │
 │   │Model Loader │    └──────────────────────────────┘   │
-│   │Tool Registry│              │                         │
+│   │Tool Registry│              │                        │
 │   └─────────────┘    ┌─────────▼──────────────────────┐ │
-│                      │       3-Bus Communication       │ │
+│                      │       3-Bus Communication      │ │
 │                      │  gRPC(1-10ms) · NATS(10-100ms) │ │
 │                      │  SharedMem(<1µs · zero-copy)   │ │
 │                      └────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
          │ Metal API / CoreML
 ┌────────▼────────────────────────────────────────────────┐
-│              Magellano Inference Engine (Swift)          │
-│  3.3B params · Apple Silicon · NF4 quant · 50-100ms    │
-│  QLoRA nightly loop · A/B gate (≥5%) · Hot-swap deploy │
+│              Magellano Inference Engine (Swift)         │
+│  3.3B params · Apple Silicon · NF4 quant · 50-100ms     │
+│  QLoRA nightly loop · A/B gate (≥5%) · Hot-swap deploy  │
 └─────────────────────────────────────────────────────────┘
 ```
 

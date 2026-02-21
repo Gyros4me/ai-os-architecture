@@ -1,4 +1,4 @@
-# AI OS Architecture
+# AI OS Architecture 0xMeridian
 
 > **Status:** Architecture Whitepaper · PoC in progress · Rust/Swift contributors welcome
 

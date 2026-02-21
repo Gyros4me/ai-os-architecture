@@ -189,7 +189,7 @@ Architecture documentation: Creative Commons BY-SA 4.0
 Code (when published): Apache 2.0
 
 ---
-Acknowledgments
+## Acknowledgments
 Technical Partners:
 
 Claude Opus-Sonnet (Anthropic) | Kimi Thinking (Moonshot AI)

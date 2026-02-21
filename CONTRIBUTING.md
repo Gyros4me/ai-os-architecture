@@ -20,14 +20,14 @@ The full Technical Design Document (TDD v5.1, 4630+ .md lines) is in `docs/`. Be
 
 | Area | Stack | TDD Section |
 |------|-------|-------------|
-| Kernel core | Rust, Tokio, async | Parte A, B, C |
-| gRPC / message bus | tonic, Protobuf, NATS | Parte D (Bus 1, Bus 2) |
-| Inference engine | Swift, Metal, CoreML | Parte B (Magellano HAL) |
-| Agent protocol | FIPA-ACL, Rust | Parte A (Tassonomia) |
-| Vector search | FAISS, Rust/Python | Parte E (Memory Layer) |
+| Kernel core | Rust, Tokio, async | Part A, B, C |
+| gRPC / message bus | tonic, Protobuf, NATS | Part D (Bus 1, Bus 2) |
+| Inference engine | Swift, Metal, CoreML | Part B (Magellano HAL) |
+| Agent protocol | FIPA-ACL, Rust | Part A (Taxonomy) |
+| Vector search | FAISS, Rust/Python | Part E (Memory Layer) |
 | Consensus | openraft, Raft | ADR-004 |
-| Observability | Prometheus, OTel | Parte G |
-| Security | Zero Trust, ED25519 | Parte H |
+| Observability | Prometheus, OTel | Part G |
+| Security | Zero Trust, ED25519 | Part H |
 
 ---
 

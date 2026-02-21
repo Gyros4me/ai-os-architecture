@@ -2,7 +2,7 @@
 
 **Status:** Accepted  
 **Date:** 2026-02-17  
-**Authors:** Alessandro + Claude (CoS)  
+**Authors:** Alessandro La Gamba  
 **Deciders:** Architecture team  
 
 ---

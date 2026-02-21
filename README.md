@@ -193,8 +193,8 @@ Code (when published): Apache 2.0
 Technical Partners:
 
 Claude Opus-Sonnet (Anthropic) | Kimi Thinking (Moonshot AI)
-Research Lead: Alessandro La Gamba
 
+Research Lead: Alessandro La Gamba
 ---
 ## Author
 Alessandro La Gamba

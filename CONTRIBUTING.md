@@ -6,7 +6,7 @@ Thank you for your interest. This is a **pre-PoC architecture project** — we a
 
 ## Current Phase: Architecture → PoC
 
-The full Technical Design Document (TDD v5.1, 120+ pages) is in `docs/`. Before writing any code, read the relevant section for the component you want to contribute to.
+The full Technical Design Document (TDD v5.1, 4630+ .md lines) is in `docs/`. Before writing any code, read the relevant section for the component you want to contribute to.
 
 **Active PoC targets (Phase α):**
 - Rust kernel skeleton (Tokio + tonic/gRPC)

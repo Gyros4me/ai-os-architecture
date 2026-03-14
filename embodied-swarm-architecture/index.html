@@ -329,34 +329,113 @@
 
                     <p class="text-slate-400 mb-8 text-lg">Integration follows a <strong class="text-cyan-400">Non-Disruptive Sidecar Overlay</strong> pattern. The existing WMS/Fleet Manager continues macro navigation and task assignment. The Magellano/0xMeridian stack plugs in via ROS/MQTT bridge for tactical inference and fleet synchronization.</p>
 
-                    <!-- Architecture Diagram -->
+                    <!-- Architecture Diagram — SVG custom (Mermaid replaced: text truncation fix) -->
                     <div class="glass-panel rounded-2xl p-6 mb-8 overflow-x-auto">
-                        <div class="mermaid">
-flowchart TB
-    subgraph Legacy["Legacy RaaS Stack"]
-        WMS["WMS / Fleet Orchestration"]
-        AGV["AGV Hardware Fleet"]
-    end
+                        <svg viewBox="0 0 860 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:'JetBrains Mono',monospace;">
+                          <defs>
+                            <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                              <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+                            </marker>
+                            <marker id="arrowhead-cyan" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                              <polygon points="0 0, 8 3, 0 6" fill="#22d3ee"/>
+                            </marker>
+                            <marker id="arrowhead-back" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto">
+                              <polygon points="8 0, 0 3, 8 6" fill="#64748b"/>
+                            </marker>
+                          </defs>
 
-    subgraph Sidecar["0xMeridian Sidecar Overlay"]
-        direction TB
-        MAG["Magellano Edge Core 3.3B Mamba-MoE NF4 15W 50-100ms"]
-        ZK["ZK-SLA Certification Groth16 Proofs 192 bytes less than 2ms"]
-        SMPC["SMPC Federated Learning Space-QLoRA Pairwise Masking"]
-        DTN["DTN-Enhanced Sync Rotative Raft T+5s Recovery"]
-    end
+                          <!-- ── LEGACY RAAS STACK (left column) ── -->
+                          <rect x="20" y="30" width="200" height="200" rx="12" fill="rgba(30,41,59,0.7)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3"/>
+                          <text x="120" y="22" text-anchor="middle" font-size="10" fill="#ef4444" font-weight="600" letter-spacing="1">LEGACY RAAS STACK</text>
 
-    ROS["ROS-MQTT Bridge Topic swarm-cognitive"]
+                          <!-- WMS box -->
+                          <rect x="40" y="50" width="160" height="70" rx="8" fill="rgba(15,23,42,0.9)" stroke="#64748b" stroke-width="1"/>
+                          <text x="120" y="75" text-anchor="middle" font-size="11" fill="#94a3b8" font-weight="700">WMS</text>
+                          <text x="120" y="92" text-anchor="middle" font-size="9.5" fill="#64748b">Fleet Orchestration</text>
+                          <text x="120" y="108" text-anchor="middle" font-size="9" fill="#475569">Macro Navigation</text>
 
-    WMS <-->|Task Assignment| AGV
-    AGV <-->|Sensor Stream| MAG
-    MAG -->|Inference Results| ROS
-    ROS -->|Cognitive Commands| AGV
-    MAG <-->|Weight Updates| SMPC
-    MAG -->|Safety Proofs| ZK
-    SMPC <-->|P2P Sync| DTN
-    ZK -->|Audit Certificates| WMS
-                        </div>
+                          <!-- AGV box -->
+                          <rect x="40" y="145" width="160" height="70" rx="8" fill="rgba(15,23,42,0.9)" stroke="#64748b" stroke-width="1"/>
+                          <text x="120" y="170" text-anchor="middle" font-size="11" fill="#94a3b8" font-weight="700">AGV Fleet</text>
+                          <text x="120" y="187" text-anchor="middle" font-size="9.5" fill="#64748b">Hardware Layer</text>
+                          <text x="120" y="203" text-anchor="middle" font-size="9" fill="#475569">AMR / Mobile Robots</text>
+
+                          <!-- WMS → AGV arrow -->
+                          <line x1="120" y1="120" x2="120" y2="143" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrowhead)"/>
+                          <line x1="120" y1="143" x2="120" y2="121" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrowhead-back)"/>
+                          <text x="128" y="135" font-size="8" fill="#475569">Task Assign</text>
+
+                          <!-- ── ROS-MQTT BRIDGE (center) ── -->
+                          <rect x="340" y="190" width="180" height="65" rx="8" fill="rgba(15,23,42,0.95)" stroke="#22d3ee" stroke-width="1.5"/>
+                          <text x="430" y="215" text-anchor="middle" font-size="10" fill="#22d3ee" font-weight="700">ROS-MQTT Bridge</text>
+                          <text x="430" y="231" text-anchor="middle" font-size="9" fill="#64748b">topic: swarm-cognitive</text>
+                          <text x="430" y="246" text-anchor="middle" font-size="8.5" fill="#475569">Sensor Stream In / Commands Out</text>
+
+                          <!-- ── 0xMERIDIAN SIDECAR OVERLAY (right column) ── -->
+                          <rect x="590" y="20" width="250" height="480" rx="12" fill="rgba(30,41,59,0.5)" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3"/>
+                          <text x="715" y="14" text-anchor="middle" font-size="10" fill="#a78bfa" font-weight="600" letter-spacing="1">0xMERIDIAN SIDECAR OVERLAY</text>
+
+                          <!-- MAG box -->
+                          <rect x="608" y="38" width="214" height="95" rx="8" fill="rgba(8,47,73,0.9)" stroke="#0ea5e9" stroke-width="1.5"/>
+                          <text x="715" y="62" text-anchor="middle" font-size="11" fill="#38bdf8" font-weight="700">MAGELLANO</text>
+                          <text x="715" y="79" text-anchor="middle" font-size="9.5" fill="#94a3b8">Edge Core · 3.3B Mamba-MoE</text>
+                          <text x="715" y="95" text-anchor="middle" font-size="9" fill="#64748b">NF4 quantized · 15W power</text>
+                          <text x="715" y="111" text-anchor="middle" font-size="9" fill="#64748b">50–100ms inference latency</text>
+                          <text x="715" y="125" text-anchor="middle" font-size="8.5" fill="#0ea5e9">● On-board edge inference</text>
+
+                          <!-- ZK box -->
+                          <rect x="608" y="155" width="214" height="95" rx="8" fill="rgba(30,27,75,0.9)" stroke="#7c3aed" stroke-width="1.5"/>
+                          <text x="715" y="179" text-anchor="middle" font-size="11" fill="#a78bfa" font-weight="700">ZK-SLA CERTIFICATION</text>
+                          <text x="715" y="196" text-anchor="middle" font-size="9.5" fill="#94a3b8">Groth16 Zero-Knowledge Proofs</text>
+                          <text x="715" y="212" text-anchor="middle" font-size="9" fill="#64748b">192 bytes · &lt;2ms verification</text>
+                          <text x="715" y="228" text-anchor="middle" font-size="9" fill="#64748b">ZK-Audit: zero data exfiltration</text>
+                          <text x="715" y="242" text-anchor="middle" font-size="8.5" fill="#7c3aed">● Cryptographic SLA guarantee</text>
+
+                          <!-- SMPC box -->
+                          <rect x="608" y="272" width="214" height="95" rx="8" fill="rgba(5,46,22,0.8)" stroke="#22c55e" stroke-width="1.5"/>
+                          <text x="715" y="296" text-anchor="middle" font-size="11" fill="#4ade80" font-weight="700">SMPC FEDERATED LEARNING</text>
+                          <text x="715" y="313" text-anchor="middle" font-size="9.5" fill="#94a3b8">Secure Multiparty Computation</text>
+                          <text x="715" y="329" text-anchor="middle" font-size="9" fill="#64748b">Space-QLoRA · Pairwise Masking</text>
+                          <text x="715" y="345" text-anchor="middle" font-size="9" fill="#64748b">Fleet weight sync, no raw data</text>
+                          <text x="715" y="359" text-anchor="middle" font-size="8.5" fill="#22c55e">● Privacy-preserving learning</text>
+
+                          <!-- DTN box -->
+                          <rect x="608" y="389" width="214" height="95" rx="8" fill="rgba(49,27,5,0.8)" stroke="#f97316" stroke-width="1.5"/>
+                          <text x="715" y="413" text-anchor="middle" font-size="11" fill="#fb923c" font-weight="700">DTN-ENHANCED SYNC</text>
+                          <text x="715" y="430" text-anchor="middle" font-size="9.5" fill="#94a3b8">Delay-Tolerant Networking</text>
+                          <text x="715" y="446" text-anchor="middle" font-size="9" fill="#64748b">Rotative Raft consensus</text>
+                          <text x="715" y="462" text-anchor="middle" font-size="9" fill="#64748b">Leader election T+5s recovery</text>
+                          <text x="715" y="476" text-anchor="middle" font-size="8.5" fill="#f97316">● Wi-Fi dead zone resilience</text>
+
+                          <!-- ── ARROWS ── -->
+                          <!-- AGV → ROS Bridge (Sensor Stream) -->
+                          <line x1="200" y1="200" x2="338" y2="218" stroke="#22d3ee" stroke-width="1.3" marker-end="url(#arrowhead-cyan)"/>
+                          <text x="265" y="210" text-anchor="middle" font-size="8" fill="#22d3ee">Sensor Stream</text>
+
+                          <!-- ROS → AGV (Commands) -->
+                          <line x1="338" y1="232" x2="200" y2="215" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrowhead)"/>
+                          <text x="265" y="242" text-anchor="middle" font-size="8" fill="#64748b">Cognitive Commands</text>
+
+                          <!-- ROS ↔ MAG (Inference) -->
+                          <line x1="520" y1="210" x2="606" y2="100" stroke="#0ea5e9" stroke-width="1.3" marker-end="url(#arrowhead-cyan)"/>
+                          <text x="575" y="148" text-anchor="middle" font-size="8" fill="#0ea5e9" transform="rotate(-35,575,148)">Inference Results</text>
+
+                          <!-- MAG → ZK (Safety Proofs) -->
+                          <line x1="715" y1="133" x2="715" y2="153" stroke="#7c3aed" stroke-width="1.3" marker-end="url(#arrowhead)"/>
+                          <text x="730" y="147" font-size="8" fill="#7c3aed">Safety Proofs</text>
+
+                          <!-- MAG ↔ SMPC (Weight Updates) -->
+                          <line x1="690" y1="133" x2="665" y2="270" stroke="#22c55e" stroke-width="1.2" marker-end="url(#arrowhead)"/>
+                          <text x="655" y="208" font-size="8" fill="#22c55e">Weight Updates</text>
+
+                          <!-- SMPC ↔ DTN (P2P Sync) -->
+                          <line x1="715" y1="367" x2="715" y2="387" stroke="#f97316" stroke-width="1.3" marker-end="url(#arrowhead)"/>
+                          <text x="730" y="381" font-size="8" fill="#f97316">P2P Sync</text>
+
+                          <!-- ZK → WMS (Audit Certificates) -->
+                          <line x1="608" y1="190" x2="202" y2="90" stroke="#a78bfa" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+                          <text x="395" y="120" text-anchor="middle" font-size="8" fill="#a78bfa">ZK Audit Certificates</text>
+                        </svg>
                     </div>
 
                     <div class="grid md:grid-cols-2 gap-6">
@@ -656,7 +735,7 @@ flowchart TB
                                 <div class="text-4xl">🤝</div>
                                 <div>
                                     <h4 class="font-bold text-white mb-2">Open for PoC Collaboration</h4>
-                                    <p class="text-slate-300 text-sm leading-relaxed">This is an independent HLD concept for RaaS operator partner, in order to validate this stack in a real warehouse environment. The PoC is designed to be <strong class="text-cyan-400">zero-risk for the operator</strong>: shadow mode, no WMS disruption, clear exit conditions. If the numbers hold, we have the foundation for the first European ZK-native RaaS offering.</p>
+                                    <p class="text-slate-300 text-sm leading-relaxed">This is an independent HLD concept for RaaS operator partner in order to validate this stack in a real warehouse environment. The PoC is designed to be <strong class="text-cyan-400">zero-risk for the operator</strong>: shadow mode, no WMS disruption, clear exit conditions. If the numbers hold, we have the foundation for the first European ZK-native RaaS offering.</p>
                                     <div class="mt-4 flex flex-wrap gap-3">
                                         <a href="https://www.linkedin.com/in/alessandrolagamba" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-[#0077B5]/20 border border-[#0077B5]/40 text-[#0077B5] rounded-lg text-sm font-semibold hover:bg-[#0077B5]/30 transition-all">
                                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>

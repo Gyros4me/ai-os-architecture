@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ═══ PRIMARY SEO ═══ -->
+    <title>The Embodied Swarm Architecture | Cognitive Edge AI for RaaS Fleets — Alessandro La Gamba</title>
+    <meta name="description" content="How Space-Grade AI (0xMeridian + Magellano) transforms isolated AGV/AMR fleets into a cryptographically secure, Zero-Knowledge Federated Swarm. A technical architecture proposal for RaaS operators.">
+    <meta name="keywords" content="RaaS, Robotics as a Service, Edge AI, Swarm Robotics, Zero-Knowledge Proof, Federated Learning, AMR, AGV, Mamba MoE, GDPR, Industrial AI, Warehouse Robotics, Cognitive Robotics">
+    <meta name="author" content="Alessandro La Gamba">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://gyros4me.github.io/ai-os-architecture/embodied-swarm-architecture">
+
+    <!-- ═══ OPEN GRAPH (LinkedIn preview) ═══ -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="The Embodied Swarm Architecture — Space-Grade AI for Industrial Robotics">
+    <meta property="og:description" content="Deploying Zero-Knowledge Federated Learning on RaaS fleets: 50ms edge inference, 192-byte ZK-SLA certificates, zero cloud dependency. A concrete integration proposal for the European robotics market.">
+    <meta property="og:url" content="https://gyros4me.github.io/ai-os-architecture/embodied-swarm-architecture">
+    <meta property="og:image" content="https://gyros4me.github.io/ai-os-architecture/assets/og_embodied_swarm.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="0xMeridian AI OS — Alessandro La Gamba">
+    <meta property="article:author" content="Alessandro La Gamba">
+    <meta property="article:published_time" content="2026-03-14">
+    <meta property="article:tag" content="Robotics, Edge AI, Zero-Knowledge, Federated Learning, RaaS">
+
+    <!-- ═══ TWITTER CARD ═══ -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="The Embodied Swarm Architecture — Space-Grade AI for Industrial Robotics">
+    <meta name="twitter:description" content="50ms edge inference · 192-byte ZK-SLA proofs · Zero cloud dependency. A concrete integration proposal for RaaS operators.">
+    <meta name="twitter:image" content="https://gyros4me.github.io/ai-os-architecture/assets/og_embodied_swarm.png">
+
+    <!-- ═══ STRUCTURED DATA (JSON-LD) ═══ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "The Embodied Swarm Architecture: Space-Grade Cognitive Edge & ZK Governance for Industrial Robotics",
+      "description": "Technical architecture proposal for deploying Mamba-MoE Edge AI and Zero-Knowledge Federated Learning on RaaS AGV/AMR fleets without WMS disruption.",
+      "author": {
+        "@type": "Person",
+        "name": "Alessandro La Gamba",
+        "url": "https://github.com/Gyros4me",
+        "jobTitle": "Senior AI/ML Engineer",
+        "sameAs": [
+          "https://github.com/Gyros4me",
+          "https://www.linkedin.com/in/alessandrolagamba"
+        ]
+      },
+      "datePublished": "2026-03-14",
+      "publisher": {
+        "@type": "Organization",
+        "name": "0xMeridian AI OS"
+      },
+      "about": ["Robotics", "Edge AI", "Zero-Knowledge Proofs", "Federated Learning", "Warehouse Automation"],
+      "technicalAudience": "Robotics-as-a-Service Operators, System Integrators, CTO, CEO"
+    }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                font-family: 'Inter', sans-serif;
+                background-color: #0a0a0f;
+                color: #e2e8f0;
+            }
+            code, pre {
+                font-family: 'JetBrains Mono', monospace;
+            }
+        }
+        @layer components {
+            .gradient-text {
+                background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #f472b6 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .glass-panel {
+                background: rgba(15, 23, 42, 0.6);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(148, 163, 184, 0.1);
+            }
+            .neon-border {
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.15), inset 0 0 20px rgba(0, 212, 255, 0.05);
+                border: 1px solid rgba(0, 212, 255, 0.3);
+            }
+            .section-marker {
+                background: linear-gradient(180deg, #00d4ff 0%, #7c3aed 100%);
+                width: 4px;
+                border-radius: 2px;
+            }
+            .hover-glow:hover {
+                box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+                transform: translateY(-2px);
+                transition: all 0.3s ease;
+            }
+        }
+
+        /* PRINT STYLES - Magic White Document Transformation */
+        @media print {
+            @page {
+                margin: 20mm;
+                size: A4;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body { 
+                background-color: white !important; 
+                color: black !important;
+                font-size: 11pt;
+                line-height: 1.5;
+            }
+
+            .glass-panel { 
+                background: white !important; 
+                border: 1px solid #ddd !important; 
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+                padding: 15px !important;
+            }
+
+            .gradient-text { 
+                -webkit-text-fill-color: #1e40af !important; 
+                background: none !important; 
+                color: #1e40af !important;
+                font-weight: bold;
+            }
+
+            .text-slate-300, .text-slate-400, .text-slate-500 { 
+                color: #333 !important; 
+            }
+
+            .text-cyan-400 { color: #0066cc !important; }
+            .text-purple-400 { color: #6600cc !important; }
+            .text-green-400 { color: #006600 !important; }
+            .text-red-400 { color: #cc0000 !important; }
+            .text-orange-400 { color: #cc6600 !important; }
+            .text-pink-400 { color: #cc0066 !important; }
+            .text-yellow-400 { color: #996600 !important; }
+
+            h1, h2, h3, h4, span, p, li, div { 
+                color: black !important; 
+            }
+
+            h1 { font-size: 24pt !important; margin-bottom: 10px !important; }
+            h2 { font-size: 18pt !important; margin-top: 20px !important; margin-bottom: 10px !important; }
+            h3 { font-size: 14pt !important; margin-top: 15px !important; margin-bottom: 8px !important; }
+
+            /* Nasconde la nav bar in stampa */
+            nav { display: none !important; }
+
+            /* Nasconde il CTA finale in stampa */
+            #cta { display: none !important; }
+
+            /* Fix per i marker delle sezioni */
+            .section-marker {
+                background: #0066cc !important;
+                width: 3px !important;
+            }
+
+            /* Fix per codice/monospace */
+            code, pre, .font-mono {
+                background: #f5f5f5 !important;
+                border: 1px solid #ddd !important;
+                color: #333 !important;
+            }
+
+            /* Fix per link */
+            a {
+                color: #0066cc !important;
+                text-decoration: underline !important;
+            }
+
+            /* Rimuovi spazi extra */
+            main {
+                padding-bottom: 0 !important;
+            }
+
+            section {
+                margin-bottom: 30px !important;
+            }
+
+            /* Fix footer */
+            footer {
+                border-top: 1px solid #ddd !important;
+                background: white !important;
+            }
+
+            footer .text-slate-400, footer .text-slate-500 {
+                color: #666 !important;
+            }
+
+            /* Nascondi elementi interattivi */
+            button, .hover-glow, .neon-border {
+                box-shadow: none !important;
+            }
+
+            /* Fix per i badge colorati */
+            .bg-cyan-500\/20, .bg-purple-500\/20, .bg-green-500\/20, .bg-red-500\/20, .bg-orange-500\/20, .bg-pink-500\/20 {
+                background: #f0f0f0 !important;
+                border: 1px solid #ccc !important;
+            }
+
+            /* Fix per le bordature colorate */
+            .border-cyan-500, .border-purple-500, .border-green-500, .border-red-500 {
+                border-color: #999 !important;
+                border-left-width: 3px !important;
+            }
+
+            /* Mermaid diagram fix */
+            .mermaid {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                padding: 10px !important;
+            }
+
+            /* Rimuovi animazioni */
+            .animate-pulse {
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-slate-800/50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                    </svg>
+                </div>
+                <span class="font-bold text-xl tracking-tight">0xMeridian <span class="text-cyan-400">+</span> Magellano</span>
+            </div>
+            <button onclick="handlePrint()" class="px-6 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-full font-semibold text-sm hover:shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center gap-2 cursor-pointer no-print">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                Print / Save PDF
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative pt-32 pb-20 px-6 overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-slate-900/0 to-slate-900/0"></div>
+        <div class="max-w-5xl mx-auto relative">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-950/50 border border-cyan-800/50 text-cyan-400 text-sm font-mono mb-6">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                Technical Architecture Document
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+                The <span class="gradient-text">Embodied Swarm</span><br/>
+                Architecture
+            </h1>
+            <p class="text-xl md:text-2xl text-slate-400 max-w-3xl leading-relaxed mb-8">
+                Deploying Space-Grade Cognitive Edge & Zero-Knowledge Governance in Industrial Robotics
+            </p>
+            <div class="flex flex-wrap gap-4 text-sm font-mono text-slate-500">
+                <span class="px-3 py-1 rounded bg-slate-800/50 border border-slate-700">Target: RaaS Operators</span>
+                <span class="px-3 py-1 rounded bg-slate-800/50 border border-slate-700">Author: Alessandro La Gamba</span>
+                <span class="px-3 py-1 rounded bg-slate-800/50 border border-slate-700">Date: March 2026</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-6 pb-32 space-y-24">
+
+        <!-- Section 1: Executive Brief -->
+        <section id="executive" class="relative">
+            <div class="flex gap-6">
+                <div class="section-marker h-full min-h-[200px]"></div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-4xl font-bold text-slate-700">01</span>
+                        <h2 class="text-3xl font-bold">Executive Brief</h2>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-8 neon-border">
+                        <p class="text-lg text-cyan-400 font-semibold mb-4">For: Robotics-as-a-Service Operators & System Integrators</p>
+
+                        <div class="space-y-6">
+                            <div class="border-l-4 border-red-500/50 pl-6 py-2 bg-red-950/20 rounded-r-lg">
+                                <h3 class="text-red-400 font-bold mb-2">The RaaS Paradox</h3>
+                                <p class="text-slate-300">The Robotics-as-a-Service model is scaling but hitting an architectural wall: <strong>Cloud dependency</strong>. Continuous telemetry and video streaming for AI training saturates bandwidth, introduces critical latency in dynamic environments, and raises insurmountable privacy (GDPR) and industrial secrecy concerns in client facilities (Pharma, Defense, Manufacturing).</p>
+                            </div>
+
+                            <div class="border-l-4 border-cyan-500/50 pl-6 py-2 bg-cyan-950/20 rounded-r-lg">
+                                <h3 class="text-cyan-400 font-bold mb-2">The Solution: Space-Grade Reliability</h3>
+                                <p class="text-slate-300">If an AI can operate in orbit—with 40W power budget, extreme latency, and no ground connection—it can dominate a terrestrial warehouse.</p>
+                                <p class="text-slate-300 mt-2">This document outlines the integration of a <strong>"Cognitive Sidecar" (Magellano)</strong> and a <strong>Federated Operating System (0xMeridian)</strong> onto existing RaaS fleets. Without touching native hardware or proprietary WMS, I transform isolated AGV robots into a <strong>cognitively autonomous and cryptographically secure Swarm</strong>.</p>
+                            </div>
+
+                            <div class="border-l-4 border-purple-500/50 pl-6 py-2 bg-purple-950/20 rounded-r-lg">
+                                <h3 class="text-purple-400 font-bold mb-2">The Competitive Advantage</h3>
+                                <p class="text-slate-300">The operator becomes the only RaaS provider in Europe offering <strong>"Zero-Knowledge Federated Learning"</strong> fleets. Robots learn from field errors, update the entire fleet in 5 seconds, but mathematically guarantee the client that no sensitive data ever left the facility.</p>
+                            </div>
+
+                            <div class="border-l-4 border-green-500/50 pl-6 py-2 bg-green-950/20 rounded-r-lg">
+                                <h3 class="text-green-400 font-bold mb-2">The Proposal</h3>
+                                <p class="text-slate-300">A <strong>Joint PoC (Proof of Concept) of 6-8 weeks</strong>, applied in shadow-mode on 1-2 AMRs in a high-variability environment (e.g., medical logistics, pharma warehousing).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Architecture Blueprint -->
+        <section id="architecture">
+            <div class="flex gap-6">
+                <div class="section-marker h-full min-h-[200px]"></div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-4xl font-bold text-slate-700">02</span>
+                        <h2 class="text-3xl font-bold">Architecture Blueprint</h2>
+                    </div>
+
+                    <p class="text-slate-400 mb-8 text-lg">Integration follows a <strong class="text-cyan-400">Non-Disruptive Sidecar Overlay</strong> pattern. The existing WMS/Fleet Manager continues macro navigation and task assignment. The Magellano/0xMeridian stack plugs in via ROS/MQTT bridge for tactical inference and fleet synchronization.</p>
+
+                    <!-- Architecture Diagram — SVG custom (Mermaid replaced: text truncation fix) -->
+                    <div class="glass-panel rounded-2xl p-6 mb-8 overflow-x-auto">
+                        <svg viewBox="0 0 860 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:'JetBrains Mono',monospace;">
+                          <defs>
+                            <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                              <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+                            </marker>
+                            <marker id="arrowhead-cyan" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                              <polygon points="0 0, 8 3, 0 6" fill="#22d3ee"/>
+                            </marker>
+                            <marker id="arrowhead-back" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto">
+                              <polygon points="8 0, 0 3, 8 6" fill="#64748b"/>
+                            </marker>
+                          </defs>
+
+                          <!-- ── LEGACY RAAS STACK (left column) ── -->
+                          <rect x="20" y="30" width="200" height="200" rx="12" fill="rgba(30,41,59,0.7)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3"/>
+                          <text x="120" y="22" text-anchor="middle" font-size="10" fill="#ef4444" font-weight="600" letter-spacing="1">LEGACY RAAS STACK</text>
+
+                          <!-- WMS box -->
+                          <rect x="40" y="50" width="160" height="70" rx="8" fill="rgba(15,23,42,0.9)" stroke="#64748b" stroke-width="1"/>
+                          <text x="120" y="75" text-anchor="middle" font-size="11" fill="#94a3b8" font-weight="700">WMS</text>
+                          <text x="120" y="92" text-anchor="middle" font-size="9.5" fill="#64748b">Fleet Orchestration</text>
+                          <text x="120" y="108" text-anchor="middle" font-size="9" fill="#475569">Macro Navigation</text>
+
+                          <!-- AGV box -->
+                          <rect x="40" y="145" width="160" height="70" rx="8" fill="rgba(15,23,42,0.9)" stroke="#64748b" stroke-width="1"/>
+                          <text x="120" y="170" text-anchor="middle" font-size="11" fill="#94a3b8" font-weight="700">AGV Fleet</text>
+                          <text x="120" y="187" text-anchor="middle" font-size="9.5" fill="#64748b">Hardware Layer</text>
+                          <text x="120" y="203" text-anchor="middle" font-size="9" fill="#475569">AMR / Mobile Robots</text>
+
+                          <!-- WMS → AGV arrow -->
+                          <line x1="120" y1="120" x2="120" y2="143" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrowhead)"/>
+                          <line x1="120" y1="143" x2="120" y2="121" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrowhead-back)"/>
+                          <text x="128" y="135" font-size="8" fill="#475569">Task Assign</text>
+
+                          <!-- ── ROS-MQTT BRIDGE (center) ── -->
+                          <rect x="340" y="190" width="180" height="65" rx="8" fill="rgba(15,23,42,0.95)" stroke="#22d3ee" stroke-width="1.5"/>
+                          <text x="430" y="215" text-anchor="middle" font-size="10" fill="#22d3ee" font-weight="700">ROS-MQTT Bridge</text>
+                          <text x="430" y="231" text-anchor="middle" font-size="9" fill="#64748b">topic: swarm-cognitive</text>
+                          <text x="430" y="246" text-anchor="middle" font-size="8.5" fill="#475569">Sensor Stream In / Commands Out</text>
+
+                          <!-- ── 0xMERIDIAN SIDECAR OVERLAY (right column) ── -->
+                          <rect x="590" y="20" width="250" height="480" rx="12" fill="rgba(30,41,59,0.5)" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3"/>
+                          <text x="715" y="14" text-anchor="middle" font-size="10" fill="#a78bfa" font-weight="600" letter-spacing="1">0xMERIDIAN SIDECAR OVERLAY</text>
+
+                          <!-- MAG box -->
+                          <rect x="608" y="38" width="214" height="95" rx="8" fill="rgba(8,47,73,0.9)" stroke="#0ea5e9" stroke-width="1.5"/>
+                          <text x="715" y="62" text-anchor="middle" font-size="11" fill="#38bdf8" font-weight="700">MAGELLANO</text>
+                          <text x="715" y="79" text-anchor="middle" font-size="9.5" fill="#94a3b8">Edge Core · 3.3B Mamba-MoE</text>
+                          <text x="715" y="95" text-anchor="middle" font-size="9" fill="#64748b">NF4 quantized · 15W power</text>
+                          <text x="715" y="111" text-anchor="middle" font-size="9" fill="#64748b">50–100ms inference latency</text>
+                          <text x="715" y="125" text-anchor="middle" font-size="8.5" fill="#0ea5e9">● On-board edge inference</text>
+
+                          <!-- ZK box -->
+                          <rect x="608" y="155" width="214" height="95" rx="8" fill="rgba(30,27,75,0.9)" stroke="#7c3aed" stroke-width="1.5"/>
+                          <text x="715" y="179" text-anchor="middle" font-size="11" fill="#a78bfa" font-weight="700">ZK-SLA CERTIFICATION</text>
+                          <text x="715" y="196" text-anchor="middle" font-size="9.5" fill="#94a3b8">Groth16 Zero-Knowledge Proofs</text>
+                          <text x="715" y="212" text-anchor="middle" font-size="9" fill="#64748b">192 bytes · &lt;2ms verification</text>
+                          <text x="715" y="228" text-anchor="middle" font-size="9" fill="#64748b">ZK-Audit: zero data exfiltration</text>
+                          <text x="715" y="242" text-anchor="middle" font-size="8.5" fill="#7c3aed">● Cryptographic SLA guarantee</text>
+
+                          <!-- SMPC box -->
+                          <rect x="608" y="272" width="214" height="95" rx="8" fill="rgba(5,46,22,0.8)" stroke="#22c55e" stroke-width="1.5"/>
+                          <text x="715" y="296" text-anchor="middle" font-size="11" fill="#4ade80" font-weight="700">SMPC FEDERATED LEARNING</text>
+                          <text x="715" y="313" text-anchor="middle" font-size="9.5" fill="#94a3b8">Secure Multiparty Computation</text>
+                          <text x="715" y="329" text-anchor="middle" font-size="9" fill="#64748b">Space-QLoRA · Pairwise Masking</text>
+                          <text x="715" y="345" text-anchor="middle" font-size="9" fill="#64748b">Fleet weight sync, no raw data</text>
+                          <text x="715" y="359" text-anchor="middle" font-size="8.5" fill="#22c55e">● Privacy-preserving learning</text>
+
+                          <!-- DTN box -->
+                          <rect x="608" y="389" width="214" height="95" rx="8" fill="rgba(49,27,5,0.8)" stroke="#f97316" stroke-width="1.5"/>
+                          <text x="715" y="413" text-anchor="middle" font-size="11" fill="#fb923c" font-weight="700">DTN-ENHANCED SYNC</text>
+                          <text x="715" y="430" text-anchor="middle" font-size="9.5" fill="#94a3b8">Delay-Tolerant Networking</text>
+                          <text x="715" y="446" text-anchor="middle" font-size="9" fill="#64748b">Rotative Raft consensus</text>
+                          <text x="715" y="462" text-anchor="middle" font-size="9" fill="#64748b">Leader election T+5s recovery</text>
+                          <text x="715" y="476" text-anchor="middle" font-size="8.5" fill="#f97316">● Wi-Fi dead zone resilience</text>
+
+                          <!-- ── ARROWS ── -->
+                          <!-- AGV → ROS Bridge (Sensor Stream) -->
+                          <line x1="200" y1="200" x2="338" y2="218" stroke="#22d3ee" stroke-width="1.3" marker-end="url(#arrowhead-cyan)"/>
+                          <text x="265" y="210" text-anchor="middle" font-size="8" fill="#22d3ee">Sensor Stream</text>
+
+                          <!-- ROS → AGV (Commands) -->
+                          <line x1="338" y1="232" x2="200" y2="215" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrowhead)"/>
+                          <text x="265" y="242" text-anchor="middle" font-size="8" fill="#64748b">Cognitive Commands</text>
+
+                          <!-- ROS ↔ MAG (Inference) -->
+                          <line x1="520" y1="210" x2="606" y2="100" stroke="#0ea5e9" stroke-width="1.3" marker-end="url(#arrowhead-cyan)"/>
+                          <text x="575" y="148" text-anchor="middle" font-size="8" fill="#0ea5e9" transform="rotate(-35,575,148)">Inference Results</text>
+
+                          <!-- MAG → ZK (Safety Proofs) -->
+                          <line x1="715" y1="133" x2="715" y2="153" stroke="#7c3aed" stroke-width="1.3" marker-end="url(#arrowhead)"/>
+                          <text x="730" y="147" font-size="8" fill="#7c3aed">Safety Proofs</text>
+
+                          <!-- MAG ↔ SMPC (Weight Updates) -->
+                          <line x1="690" y1="133" x2="665" y2="270" stroke="#22c55e" stroke-width="1.2" marker-end="url(#arrowhead)"/>
+                          <text x="655" y="208" font-size="8" fill="#22c55e">Weight Updates</text>
+
+                          <!-- SMPC ↔ DTN (P2P Sync) -->
+                          <line x1="715" y1="367" x2="715" y2="387" stroke="#f97316" stroke-width="1.3" marker-end="url(#arrowhead)"/>
+                          <text x="730" y="381" font-size="8" fill="#f97316">P2P Sync</text>
+
+                          <!-- ZK → WMS (Audit Certificates) -->
+                          <line x1="608" y1="190" x2="202" y2="90" stroke="#a78bfa" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+                          <text x="395" y="120" text-anchor="middle" font-size="8" fill="#a78bfa">ZK Audit Certificates</text>
+                        </svg>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="glass-panel rounded-xl p-6 hover-glow">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">M</div>
+                                <h3 class="text-xl font-bold text-cyan-400">Magellano On-Board</h3>
+                            </div>
+                            <ul class="space-y-2 text-slate-300 text-sm">
+                                <li class="flex items-start gap-2"><span class="text-cyan-400">-</span> <strong>Core:</strong> 3.3B Mamba-MoE quantized NF4</li>
+                                <li class="flex items-start gap-2"><span class="text-cyan-400">-</span> <strong>Performance:</strong> 50-100ms inference</li>
+                                <li class="flex items-start gap-2"><span class="text-cyan-400">-</span> <strong>Power Budget:</strong> less than 15W (zero charging impact)</li>
+                                <li class="flex items-start gap-2"><span class="text-cyan-400">-</span> <strong>Edge Advantage:</strong> Mamba handles continuous streams without Transformer memory explosion</li>
+                            </ul>
+                        </div>
+
+                        <div class="glass-panel rounded-xl p-6 hover-glow">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-xl">0x</div>
+                                <h3 class="text-xl font-bold text-purple-400">0xMeridian Overlay</h3>
+                            </div>
+                            <ul class="space-y-2 text-slate-300 text-sm">
+                                <li class="flex items-start gap-2"><span class="text-purple-400">-</span> <strong>SMPC:</strong> Secure Multiparty Computation with pairwise masking</li>
+                                <li class="flex items-start gap-2"><span class="text-purple-400">-</span> <strong>ZK-SLA:</strong> Groth16 proofs, 192 bytes, verification less than 2ms</li>
+                                <li class="flex items-start gap-2"><span class="text-purple-400">-</span> <strong>DTN Sync:</strong> Delay-Tolerant Networking for Wi-Fi dead zones</li>
+                                <li class="flex items-start gap-2"><span class="text-purple-400">-</span> <strong>Consensus:</strong> Rotative Raft, leader election T+5s</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Use Case Deep-Dive -->
+        <section id="usecases">
+            <div class="flex gap-6">
+                <div class="section-marker h-full min-h-[200px]"></div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-4xl font-bold text-slate-700">03</span>
+                        <h2 class="text-3xl font-bold">Use Case Deep-Dive</h2>
+                    </div>
+
+                    <!-- Scenario A -->
+                    <div class="glass-panel rounded-2xl p-8 mb-8 border-l-4 border-cyan-500">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-sm font-mono">SCENARIO A</span>
+                            <h3 class="text-2xl font-bold">The Autonomous Anomaly</h3>
+                        </div>
+                        <p class="text-slate-400 mb-4 italic">Pharma/Medical Logistics — High-Variability Environments</p>
+
+                        <div class="grid md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                                <div class="text-xs text-slate-500 uppercase tracking-wider mb-1">Context</div>
+                                <div class="text-sm font-semibold">High variability packaging</div>
+                            </div>
+                            <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                                <div class="text-xs text-slate-500 uppercase tracking-wider mb-1">Event</div>
+                                <div class="text-sm font-semibold">Unknown obstacle detected</div>
+                            </div>
+                            <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                                <div class="text-xs text-slate-500 uppercase tracking-wider mb-1">Execution</div>
+                                <div class="text-sm font-semibold">50ms edge inference</div>
+                            </div>
+                            <div class="bg-slate-800/50 rounded-lg p-4 text-center">
+                                <div class="text-xs text-slate-500 uppercase tracking-wider mb-1">Swarm Update</div>
+                                <div class="text-sm font-semibold">T+5s fleet sync</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900/50 rounded-xl p-6 font-mono text-sm">
+                            <div class="text-slate-500 mb-2">// Execution Flow</div>
+                            <div class="text-green-400">[SENSOR] LiDAR anomaly detected: unmapped obstacle</div>
+                            <div class="text-cyan-400 ml-4">| 15W inference @ 50ms</div>
+                            <div class="text-purple-400">[MAGELLANO] Spatial reasoning - evasive trajectory calculated</div>
+                            <div class="text-cyan-400 ml-4">| Local QLoRA update</div>
+                            <div class="text-yellow-400">[0xMERIDIAN] ZK-Proof generated: safety params verified</div>
+                            <div class="text-cyan-400 ml-4">| P2P broadcast via DTN</div>
+                            <div class="text-pink-400">[SWARM] 10 robots updated with new obstacle pattern</div>
+                            <div class="text-cyan-400 ml-4">| Cloud aggregation (SMPC)</div>
+                            <div class="text-green-400">[GLOBAL] Global model improved, zero data exfiltration</div>
+                        </div>
+                    </div>
+
+                    <!-- Scenario B -->
+                    <div class="glass-panel rounded-2xl p-8 border-l-4 border-purple-500">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm font-mono">SCENARIO B</span>
+                            <h3 class="text-2xl font-bold">The Compliance Proof</h3>
+                        </div>
+                        <p class="text-slate-400 mb-4 italic">HACCP/Cleanroom Sanitization — Regulated Industrial Environments</p>
+
+                        <div class="bg-gradient-to-r from-purple-900/30 to-slate-900/30 rounded-xl p-6 mb-6">
+                            <div class="flex items-start gap-4">
+                                <div class="text-2xl font-bold text-purple-400">ZK</div>
+                                <div>
+                                    <h4 class="font-bold text-purple-400 mb-2">The ZK-Audit Disruptor</h4>
+                                    <p class="text-slate-300 text-sm leading-relaxed">The robot does not send plaintext logs. 0xMeridian generates a <strong>Zero-Knowledge Proof</strong>: a cryptographically undeniable certificate attesting the claim <em>"I covered 100% of area X respecting chemical/physical parameters Y"</em>. The client gets mathematical certainty of RaaS service, maintaining 100% facility privacy.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div class="bg-slate-800/30 rounded-lg p-4">
+                                <div class="text-red-400 font-bold mb-2">Traditional Approach</div>
+                                <ul class="text-sm text-slate-400 space-y-1">
+                                    <li>- Video logs sent to cloud</li>
+                                    <li>- Privacy violations (GDPR)</li>
+                                    <li>- Industrial secret exposure</li>
+                                    <li>- Bandwidth saturation</li>
+                                </ul>
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                </svg>
+                            </div>
+                            <div class="bg-gradient-to-br from-green-900/30 to-cyan-900/30 rounded-lg p-4 border border-green-500/30">
+                                <div class="text-green-400 font-bold mb-2">ZK-Proof Approach</div>
+                                <ul class="text-sm text-slate-300 space-y-1">
+                                    <li>- 192-byte certificate only</li>
+                                    <li>- Mathematical certainty</li>
+                                    <li>- Zero data exposure</li>
+                                    <li>- Instant verification</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Competitive Moat -->
+        <section id="moat">
+            <div class="flex gap-6">
+                <div class="section-marker h-full min-h-[200px]"></div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-4xl font-bold text-slate-700">04</span>
+                        <h2 class="text-3xl font-bold">Competitive Moat Analysis</h2>
+                    </div>
+
+                    <p class="text-slate-400 mb-6">Why giants (Boston Dynamics, Geek+, Amazon Robotics) could not offer this standard?</p>
+
+                    <div class="space-y-4">
+                        <div class="glass-panel rounded-xl p-6 flex gap-4 items-start">
+                            <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 font-bold text-xl shrink-0">1</div>
+                            <div>
+                                <h3 class="font-bold text-red-400 mb-2">Hardware Bias vs. Cognitive Focus</h3>
+                                <p class="text-slate-300 text-sm">OEM manufacturers solve kinematics and motion control problems. They sell hardware bound to closed stacks.I position as an <strong>exclusively cognitive and agnostic layer</strong>.</p>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel rounded-xl p-6 flex gap-4 items-start">
+                            <div class="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 font-bold text-xl shrink-0">2</div>
+                            <div>
+                                <h3 class="font-bold text-orange-400 mb-2">The Cloud Trap</h3>
+                                <p class="text-slate-300 text-sm">Amazon or Google propose robotic training based on massive cloud pipelines (e.g., AWS RoboMaker). This model fails in European industrial warehouses due to <strong>latency limits, bandwidth, and regulatory rigidity (GDPR)</strong>.</p>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel rounded-xl p-6 flex gap-4 items-start neon-border">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shrink-0">3</div>
+                            <div>
+                                <h3 class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">Stack Uniqueness (The Moat)</h3>
+                                <p class="text-slate-300 text-sm">The barrier to entry is engineering. To replicate this system, a competitor must simultaneously master:</p>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-xs">Mamba-MoE Edge AI</span>
+                                    <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs">DTN Space Protocols</span>
+                                    <span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-400 text-xs">ZK-Cryptography</span>
+                                    <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs">Federated Learning</span>
+                                </div>
+                                <p class="text-slate-400 text-sm mt-3 italic">It is a rare intersection of competencies (Space Computing + AI + ZK-Crypto) constituting an unassailable competitive moat in the short/medium term.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Integration Roadmap -->
+        <section id="roadmap">
+            <div class="flex gap-6">
+                <div class="section-marker h-full min-h-[200px]"></div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-4xl font-bold text-slate-700">05</span>
+                        <h2 class="text-3xl font-bold">Integration Roadmap</h2>
+                    </div>
+
+                    <p class="text-slate-400 mb-8">Estimated Path to Production: <strong class="text-cyan-400">12 Months</strong></p>
+
+                    <div class="relative">
+                        <!-- Timeline line -->
+                        <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-cyan-500 via-purple-500 to-pink-500"></div>
+
+                        <!-- Phase 1 -->
+                        <div class="relative flex gap-6 mb-8">
+                            <div class="w-16 h-16 rounded-full bg-cyan-500 flex items-center justify-center text-slate-900 font-bold text-xl shrink-0 z-10">1</div>
+                            <div class="flex-1 glass-panel rounded-xl p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-cyan-400">The Sidecar PoC</h3>
+                                    <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-sm font-mono">Month 1-2</span>
+                                </div>
+                                <ul class="text-slate-300 text-sm space-y-2">
+                                    <li class="flex items-start gap-2"><span class="text-cyan-400">-</span> Setup ROS-MQTT Overlay on 1-2 AMRs offline/test environment</li>
+                                    <li class="flex items-start gap-2"><span class="text-cyan-400">-</span> Magellano integration at 15W for passive inference (Shadow Mode)</li>
+                                </ul>
+                                <div class="mt-4 px-4 py-2 bg-cyan-950/30 rounded-lg border border-cyan-800/30">
+                                    <span class="text-cyan-400 font-semibold text-sm">Deliverable:</span>
+                                    <span class="text-slate-400 text-sm"> Power consumption benchmarking, inference latency vs. current WMS</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phase 2 -->
+                        <div class="relative flex gap-6 mb-8">
+                            <div class="w-16 h-16 rounded-full bg-purple-500 flex items-center justify-center text-slate-900 font-bold text-xl shrink-0 z-10">2</div>
+                            <div class="flex-1 glass-panel rounded-xl p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-purple-400">Fleet Trial & ZK-Audit</h3>
+                                    <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm font-mono">Month 3-5 (Core) + Month 6-7 (ZK Validation)</span>
+                                </div>
+                                <ul class="text-slate-300 text-sm space-y-2">
+                                    <li class="flex items-start gap-2"><span class="text-purple-400">-</span> Deploy on 10+ robots in collaborative client environment (medical logistics)</li>
+                                    <li class="flex items-start gap-2"><span class="text-purple-400">-</span> 0xMeridian activation: P2P sync testing and first ZK-Proof generation</li>
+                                </ul>
+                                <div class="mt-4 px-4 py-2 bg-purple-950/30 rounded-lg border border-purple-800/30">
+                                    <span class="text-purple-400 font-semibold text-sm">Deliverable:</span>
+                                    <span class="text-slate-400 text-sm"> Cryptographic validation without sensitive data cloud transmission</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phase 3 -->
+                        <div class="relative flex gap-6">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-red-600 flex items-center justify-center text-slate-900 font-bold text-xl shrink-0 z-10">3</div>
+                            <div class="flex-1 glass-panel rounded-xl p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-red-400">RaaS-Native Integration</h3>
+                                    <span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-400 text-sm font-mono">Month 8-12</span>
+                                </div>
+                                <ul class="text-slate-300 text-sm space-y-2">
+                                    <li class="flex items-start gap-2"><span class="text-pink-400">-</span> Cognitive stack packaging as Premium Feature</li>
+                                    <li class="flex items-start gap-2"><span class="text-pink-400">-</span> Joint Go-to-Market: Defense, Pharma, Big Manufacturing</li>
+                                </ul>
+                                <div class="mt-4 px-4 py-2 bg-gradient-to-r from-pink-950/30 to-red-950/30 rounded-lg border border-pink-800/30">
+                                    <span class="text-pink-400 font-semibold text-sm">Deliverable:</span>
+                                    <span class="text-slate-400 text-sm"> First European RaaS with Zero-Knowledge Federated Learning</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MOVEO INTEGRATION SPOTLIGHT -->
+        <section id="raas-fit" class="relative">
+            <div class="flex gap-6">
+                <div class="section-marker h-full min-h-[200px]"></div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-4xl font-bold text-slate-700">06</span>
+                        <h2 class="text-3xl font-bold">The RaaS Operator Fit</h2>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-8 border border-cyan-500/30" style="background: linear-gradient(135deg, rgba(8,47,73,0.6) 0%, rgba(15,23,42,0.8) 100%);">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="px-4 py-1 rounded-full border border-cyan-500/50 bg-cyan-500/10 text-cyan-400 text-xs font-mono uppercase tracking-widest">Concrete Integration Scenario</div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-4">
+                            Why this architecture is a natural fit for<br/>
+                            <span class="gradient-text">cloud-dependent AMR/AGV fleets in regulated environments</span>
+                        </h3>
+                        <p class="text-slate-300 mb-8 leading-relaxed">
+                            The Embodied Swarm stack was designed around a precise pain point: RaaS operators who deploy fleets in <strong class="text-cyan-400">Pharma, Medical Logistics, and Advanced Manufacturing</strong> face an impossible trade-off. Clients demand GDPR compliance and zero industrial-secret exposure — yet continuous AI improvement requires data. This is the <strong class="text-white">ZK-SLA paradox</strong>, and it has no cloud-native solution.
+                        </p>
+                        <div class="grid md:grid-cols-3 gap-4 mb-8">
+                            <div class="bg-slate-900/60 rounded-xl p-5 border border-slate-700/50">
+                                <div class="text-cyan-400 font-bold text-sm uppercase tracking-wider mb-2">Deployment Model</div>
+                                <div class="text-white font-semibold mb-1">Non-Disruptive Sidecar</div>
+                                <p class="text-slate-400 text-xs">Magellano plugs onto existing AMRs via ROS-MQTT. Zero native firmware changes. Fleet Manager keeps full control of macro-navigation.</p>
+                            </div>
+                            <div class="bg-slate-900/60 rounded-xl p-5 border border-slate-700/50">
+                                <div class="text-purple-400 font-bold text-sm uppercase tracking-wider mb-2">PoC Timeline</div>
+                                <div class="text-white font-semibold mb-1">6–8 Weeks Shadow Mode</div>
+                                <p class="text-slate-400 text-xs">1-2 AMRs running in parallel inference. No impact on production KPIs. Full performance benchmarking vs. existing WMS baseline.</p>
+                            </div>
+                            <div class="bg-slate-900/60 rounded-xl p-5 border border-slate-700/50">
+                                <div class="text-green-400 font-bold text-sm uppercase tracking-wider mb-2">Business Output</div>
+                                <div class="text-white font-semibold mb-1">First EU ZK-RaaS Premium Tier</div>
+                                <p class="text-slate-400 text-xs">Position as the only European operator offering mathematically verified, cloud-free fleet learning. Defensible moat in Defense, Pharma, Manufacturing.</p>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-r from-cyan-950/40 to-purple-950/40 rounded-xl p-6 border border-cyan-800/30">
+                            <div class="flex items-start gap-4">
+                                <div class="text-4xl">🤝</div>
+                                <div>
+                                    <h4 class="font-bold text-white mb-2">Open for PoC Collaboration</h4>
+                                    <p class="text-slate-300 text-sm leading-relaxed">This is an independent HLD concept for RaaS operator partner in order to validate this stack in a real warehouse environment. The PoC is designed to be <strong class="text-cyan-400">zero-risk for the operator</strong>: shadow mode, no WMS disruption, clear exit conditions. If the numbers hold, we have the foundation for the first European ZK-native RaaS offering.</p>
+                                    <div class="mt-4 flex flex-wrap gap-3">
+                                        <a href="https://www.linkedin.com/in/alessandrolagamba" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-[#0077B5]/20 border border-[#0077B5]/40 text-[#0077B5] rounded-lg text-sm font-semibold hover:bg-[#0077B5]/30 transition-all">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                            Connect on LinkedIn
+                                        </a>
+                                        <a href="https://github.com/Gyros4me/ai-os-architecture" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 glass-panel border border-slate-700 text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-800/50 transition-all">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                                            30+ Architecture ADRs
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section id="cta" class="glass-panel rounded-3xl p-12 text-center neon-border no-print">
+            <h2 class="text-4xl font-bold mb-4">Space-Grade <span class="gradient-text">Reliability</span></h2>
+            <p class="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">Bringing architectures designed for cosmic radiation and orbital latency into terrestrial industrial warehouses. Solving Cloud bottlenecks and cybersecurity forever.</p>
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    <span class="text-sm text-slate-300">6-8 weeks PoC</span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                    <span class="text-sm text-slate-300">Zero WMS disruption</span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/50 border border-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                    <span class="text-sm text-slate-300">GDPR-by-design</span>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="https://github.com/Gyros4me/SCM-Magellano" target="_blank" class="px-8 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-cyan-500/25 transition-all flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    Explore Magellano
+                </a>
+                <a href="https://github.com/Gyros4me/ai-os-architecture" target="_blank" class="px-8 py-4 glass-panel rounded-xl font-bold text-lg hover:bg-slate-800/50 transition-all flex items-center justify-center gap-2 border border-slate-700">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    Explore 0xMeridian
+                </a>
+                <a href="https://www.linkedin.com/in/alessandrolagamba" target="_blank" class="px-8 py-4 bg-[#0077B5]/20 border border-[#0077B5]/50 rounded-xl font-bold text-lg text-[#0077B5] hover:bg-[#0077B5]/30 transition-all flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    Contact on LinkedIn
+                </a>
+            </div>
+            <div class="mt-8 pt-8 border-t border-slate-800/50 text-slate-500 text-sm">
+                <p>Technical architecture by <strong class="text-slate-300">Alessandro La Gamba</strong> •
+                <a href="https://github.com/Gyros4me" class="text-cyan-400 hover:underline">github.com/Gyros4me</a> •
+                <a href="https://www.linkedin.com/in/alessandrolagamba" class="text-[#0077B5] hover:underline">LinkedIn</a></p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/50 py-12 px-6">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-gradient-to-br from-cyan-500 to-purple-600"></div>
+                <span class="font-bold text-slate-400">Space-Grade Reliability in Warehouse Logistics</span>
+            </div>
+            <div class="flex gap-6 text-sm text-slate-500">
+                <span>0xMeridian AI OS v5.2</span>
+                <span>•</span>
+                <span>SCM-Magellano Edge AI</span>
+                <span>•</span>
+                <span>March 2026</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Handle print with preparation
+        function handlePrint() {
+            // Scroll to top to ensure all content is loaded
+            window.scrollTo(0, 0);
+
+            // Small delay to let any lazy loading complete
+            setTimeout(function() {
+                window.print();
+            }, 100);
+        }
+
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#0ea5e9',
+                primaryTextColor: '#e2e8f0',
+                primaryBorderColor: '#0ea5e9',
+                lineColor: '#64748b',
+                secondaryColor: '#7c3aed',
+                tertiaryColor: '#0f172a',
+                fontFamily: 'JetBrains Mono'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

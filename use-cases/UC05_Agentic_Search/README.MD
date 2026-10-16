@@ -1,5 +1,7 @@
 # Agentic Search - Agente Conversazionale con Intelligenza Ibrida
 
+> Reference corpus: catalog search (books). The agent loop is domain-agnostic.
+
 # Panoramica del Progetto e Design
 
 Questo progetto implementa un agente di ricerca conversazionale (Agentic Search), un agente AI conversazionale production-ready per la ricerca di libri in linguaggio naturale. Il sistema combina tecniche di fuzzy matching con comprensione semantica avanzata per gestire efficacemente errori di trascrizione vocale, query multilingue e conversazioni multi-turno.

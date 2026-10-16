@@ -1,0 +1,151 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# pytest
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+*.log
+
+# Test outputs and generated files
+test_report.html
+test_report_*.html
+test_output*.txt
+api_spec_latest.json
+tests/api_spec_latest.json
+tests/app.log
+test_summary_*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Data directories (large files, regenerated)
+data/chroma_db/
+uploads/*
+!uploads/.gitkeep
+
+# Docker volumes (managed by Docker)
+n8n_data/
+n8n_logs/
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+*.rej
+*~
+.#*
+
+# Jupyter Notebooks (if any)
+.ipynb_checkpoints/
+*.ipynb
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Documentation builds (if using Sphinx, etc.)
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Coverage reports
+coverage.xml
+*.cover
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Utility scripts (not part of deliverable)
+add_verbose_output.py
+test_verbose_example.py
+run_all_tests.py
+
+# Project
+models/
+magellano-cache/
+.superpowers/
+scientific_reservoir_data/
+.venv/

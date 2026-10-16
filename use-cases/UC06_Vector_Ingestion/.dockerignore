@@ -1,0 +1,16 @@
+.git
+.env
+data/
+uploads/
+logs/
+n8n_data/
+n8n_logs/
+scientific_reservoir_data/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+*.log
+*.md
+!README.md
+docs/

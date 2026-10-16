@@ -1,0 +1,289 @@
+# =============================================================================
+# ONTOLOGIA MAGELLANO v2.0 — Merge Enterprise
+# Unione ontologia YAML-centrica + classificatore programmatico async
+# Copertua domini: AI/ML, MLOps/LLMOps, Quantum, MBSE, Multi-Agent,
+#                  Neural Encryption, Data Science, Automotive AI
+# =============================================================================
+
+domains:
+
+  ai_ml_core:
+    primary:
+      - "artificial intelligence"
+      - "machine learning"
+      - "deep learning"
+      - "neural network"
+      - "transformer"
+      - "attention mechanism"
+      - "foundation model"
+      - "large language model"
+      - "llm"
+      - "generative ai"
+      - "genai"
+    innovations:
+      - "state space models"
+      - "mamba architecture"
+      - "mixture of experts"
+      - "moe"
+      - "parameter efficient fine tuning"
+      - "peft"
+      - "lora"
+      - "qlora"
+      - "flash attention"
+      - "speculative decoding"
+    subdomains:
+      nlp:
+        - "natural language processing"
+        - "text generation"
+        - "sentiment analysis"
+        - "named entity recognition"
+        - "machine translation"
+        - "summarization"
+        - "question answering"
+      computer_vision:
+        - "computer vision"
+        - "image recognition"
+        - "object detection"
+        - "segmentation"
+        - "diffusion model"
+        - "vision transformer"
+        - "vit"
+      reinforcement_learning:
+        - "reinforcement learning"
+        - "q-learning"
+        - "policy gradient"
+        - "actor-critic"
+        - "multi-agent rl"
+        - "rlhf"
+        - "reward modeling"
+
+  mlops_llmops:
+    primary:
+      - "mlops"
+      - "llmops"
+      - "machine learning operations"
+      - "model deployment"
+      - "model serving"
+      - "feature store"
+      - "model registry"
+      - "pipeline orchestration"
+      - "vector database"
+      - "semantic search"
+    engineering_patterns:
+      - "rag"
+      - "retrieval augmented generation"
+      - "graphrag"
+      - "caching strategies"
+      - "model quantization"
+      - "knowledge distillation"
+      - "kubeflow"
+      - "mlflow"
+      - "bentoml"
+      - "triton inference server"
+      - "vllm"
+      - "sglang"
+    infrastructure:
+      - "kubernetes"
+      - "docker"
+      - "terraform"
+      - "ansible"
+      - "gitops"
+      - "ci/cd"
+    monitoring:
+      - "model monitoring"
+      - "drift detection"
+      - "data quality"
+      - "observability"
+      - "guardrails"
+      - "hallucination detection"
+      - "bias mitigation"
+
+  datascience:
+    primary:
+      - "data science"
+      - "data engineering"
+      - "etl"
+      - "data pipeline"
+      - "feature engineering"
+      - "exploratory data analysis"
+      - "eda"
+      - "statistical modeling"
+      - "bayesian inference"
+      - "causal inference"
+    tools:
+      - "pandas"
+      - "numpy"
+      - "scipy"
+      - "scikit-learn"
+      - "spark"
+      - "dask"
+      - "ray"
+      - "polars"
+
+  quantum_computing:
+    primary:
+      - "quantum computing"
+      - "quantum machine learning"
+      - "qml"
+      - "variational quantum eigensolver"
+      - "vqe"
+      - "quantum approximate optimization"
+      - "qaoa"
+      - "quantum neural network"
+      - "quantum transformer"
+      - "ibm qiskit"
+      - "google cirq"
+      - "pennylane"
+    algorithms:
+      - "shor algorithm"
+      - "grover algorithm"
+      - "quantum fourier transform"
+      - "quantum error correction"
+    hybrid_systems:
+      - "quantum-classical hybrid"
+      - "quantum advantage"
+      - "fault-tolerant quantum computing"
+      - "tensor networks"
+
+  model_requirement_engineering:
+    primary:
+      - "model-based systems engineering"
+      - "mbse"
+      - "requirements engineering"
+      - "sysml"
+      - "uml"
+      - "formal verification"
+      - "model checking"
+      - "safety critical systems"
+      - "automotive ai"
+    safety_standards:
+      - "iso 26262"
+      - "iso/iec 42001"
+      - "eu ai act compliance"
+      - "safety-critical ai"
+      - "iso/iec 61508"
+      - "aspin"
+    domains:
+      - "cyber-physical systems"
+      - "autonomous systems"
+      - "robotics"
+      - "avionics"
+
+  multi_agent_orchestration:
+    primary:
+      - "multi-agent system"
+      - "mas"
+      - "agent orchestration"
+      - "agentic workflow"
+      - "autonomous agents"
+      - "swarm intelligence"
+      - "distributed ai"
+      - "federated learning"
+      - "llm agent"
+    frameworks:
+      - "autogen"
+      - "crewai"
+      - "langgraph"
+      - "langchain"
+      - "semantic kernel"
+      - "amazon bedrock agent"
+    patterns:
+      - "react"
+      - "chain-of-thought"
+      - "tree-of-thought"
+      - "reflection"
+      - "plan-and-execute"
+      - "task decomposition"
+      - "agent debate"
+      - "self-reflection"
+
+  neural_encryption_privacy:
+    primary:
+      - "neural cryptography"
+      - "homomorphic encryption"
+      - "secure multi-party computation"
+      - "smpc"
+      - "differential privacy"
+      - "federated learning security"
+      - "adversarial robustness"
+      - "model watermarking"
+      - "intellectual property protection"
+      - "privacy preserving ml"
+      - "ppml"
+    techniques:
+      - "secure aggregation"
+      - "trusted execution environment"
+      - "tee"
+      - "zero-knowledge proof"
+      - "zk-snark"
+      - "fully homomorphic encryption"
+      - "fhe"
+
+# =============================================================================
+# PESI RILEVANZA
+# =============================================================================
+
+relevance_weights:
+  title_match: 3.5
+  abstract_match: 2.0
+  keyword_match: 2.5
+  citation_count: 1.5
+  recency: 1.0
+  recency_penalty_per_year: 0.1
+  source_tier:
+    neurips: 2.5
+    icml: 2.5
+    iclr: 2.5
+    cvpr: 1.8
+    iccv: 1.8
+    eccv: 1.5
+    aaai: 1.5
+    ijcai: 1.5
+    kdd: 1.8
+    www: 1.5
+    arxiv: 1.0
+    kdnuggets: 0.7
+    paperswithcode: 1.2
+    semantic_scholar: 1.0
+
+# =============================================================================
+# CONFIGURAZIONE SORGENTI
+# =============================================================================
+
+sources:
+  scientific:
+    - name: "arXiv"
+      base_url: "http://export.arxiv.org/api/query"
+      weight: 1.0
+      categories:
+        - cs.AI
+        - cs.LG
+        - cs.CL
+        - cs.CV
+        - cs.RO
+        - cs.SE
+        - cs.CR
+        - cs.DB
+        - cs.DC
+        - cs.DS
+        - stat.ML
+        - stat.AP
+    - name: "OpenReview"
+      base_url: "https://api.openreview.net/notes"
+      weight: 1.2
+      conferences: ["ICLR", "NeurIPS", "ICML"]
+      years: [2024, 2025]
+  industry:
+    - name: "KDnuggets"
+      type: "rss_blog"
+      weight: 0.8
+      feeds:
+        - "https://www.kdnuggets.com/feed"
+    - name: "PapersWithCode"
+      type: "api"
+      base_url: "https://paperswithcode.com/api/v1"
+      weight: 1.2
+  academic_aggregators:
+    - name: "SemanticScholar"
+      base_url: "https://api.semanticscholar.org/graph/v1"
+      weight: 1.1

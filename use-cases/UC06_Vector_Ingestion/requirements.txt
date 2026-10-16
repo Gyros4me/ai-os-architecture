@@ -1,0 +1,29 @@
+# Core FastAPI
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+
+# File Processing
+python-multipart==0.0.12
+PyPDF2==3.0.1
+pandas==2.2.3
+pdfplumber==0.11.5
+openpyxl==3.1.5
+PyMuPDF==1.24.14
+
+# Vector Store
+chromadb==0.5.23
+
+# Embeddings - CPU ONLY (no CUDA packages)
+sentence-transformers==3.3.1
+torch>=2.2.0
+numpy==1.26.4
+
+# Utilities
+tenacity==9.0.0
+
+# Testing (opzionale ma raccomandato)
+pytest==8.3.4
+pytest-asyncio==0.24.0
+httpx==0.28.1
+pytest-cov==6.0.0

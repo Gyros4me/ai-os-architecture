@@ -1,0 +1,111 @@
+{
+  "name": "🔥 INTEGRAZIONE VECTOR-n8n copy",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "demo-health",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "380101b0-f8df-4311-bafc-c0f814de885c",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        16
+      ],
+      "webhookId": "demo-health"
+    },
+    {
+      "parameters": {
+        "url": "http://vector-service:8000/health",
+        "options": {}
+      },
+      "id": "865d9d89-77d8-435e-8e7a-68c50e4e0baf",
+      "name": "Chiama Vector Service",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -192,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node v2: accesso dati tramite $input.first().json\nconsole.log('=== INIZIO ELABORAZIONE ===');\n\nconst vectorData = $input.first().json;\n\nconsole.log('Stato Vector Service:', vectorData.status);\nconsole.log('Uptime:', vectorData.uptime_human);\n\n// Crea la risposta strutturata\nconst response = {\n  technical: {\n    status: vectorData.status,\n    service: vectorData.service,\n    version: vectorData.version,\n    uptime: vectorData.uptime_human,\n    timestamp: vectorData.timestamp\n  },\n  demo: {\n    title: '✅ INTEGRAZIONE VECTOR-n8n FUNZIONANTE',\n    summary: `Il vector-store è ${vectorData.status} e operativo da ${vectorData.uptime_human}`,\n    components: {\n      embedder: vectorData.services && vectorData.services.embedder ? '✅ OPERATIVO' : '❌ FALLITO',\n      vector_store: vectorData.services && vectorData.services.vector_store ? '✅ OPERATIVO' : '❌ FALLITO',\n      dlq: vectorData.services && vectorData.services.dlq ? '✅ OPERATIVO' : '❌ FALLITO',\n      processor: vectorData.services && vectorData.services.processor ? '✅ OPERATIVO' : '❌ FALLITO'\n    },\n    check_time: new Date().toISOString(),\n    note: 'Questo report è generato da n8n che interroga il Vector Service'\n  },\n  raw_response: vectorData\n};\n\nconsole.log('=== RISPOSTA CREATA ===');\nreturn [{ json: response }];"
+      },
+      "id": "72f8802c-91cc-4841-94b3-17df8390947a",
+      "name": "Elabora Risultati",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200,
+          "responseKey": ""
+        }
+      },
+      "id": "be2afee3-60a5-4256-88d0-726c79aa00c7",
+      "name": "Restituisci Risposta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        208,
+        16
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Chiama Vector Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chiama Vector Service": {
+      "main": [
+        [
+          {
+            "node": "Elabora Risultati",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Elabora Risultati": {
+      "main": [
+        [
+          {
+            "node": "Restituisci Risposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "9167ba30-a03a-45a3-959a-c576e75a8ca0",
+  "meta": {
+    "instanceId": "738ec396937c37118292a949fd8288613e2ecc3df090bb54459bd47f7bf15102"
+  },
+  "id": "cgC9E0A8wAy9XW3S",
+  "tags": []
+}

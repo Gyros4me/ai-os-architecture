@@ -1,0 +1,383 @@
+{
+  "name": "Scientific Reservoir 24h Auto-Fetch",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "node-schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -896,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://export.arxiv.org/api/query?search_query=all:%22multi-agent%22+OR+all:%22retrieval+augmented+generation%22+OR+all:%22federated+learning%22+OR+all:%22edge+AI%22&start=0&max_results=50&sortBy=submittedDate&sortOrder=descending",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-fetch-arxiv",
+      "name": "Fetch arXiv",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -656,
+        64
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://api.semanticscholar.org/graph/v1/paper/search?query=multi-agent+RAG+federated+learning+edge+AI&fields=paperId,title,abstract,year,authors,venue,citationCount,openAccessPdf&limit=50&offset=0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.S2_API_KEY }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-fetch-s2",
+      "name": "Fetch Semantic Scholar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -656,
+        208
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://www.kdnuggets.com/feed",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "id": "node-fetch-kd",
+      "name": "Fetch KDnuggets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -656,
+        352
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nif (item.error) {\n  console.log('arXiv fetch error:', item.error.message || 'unknown');\n  return [{ json: { _skip: true, source_id: '_error_arxiv', content: '' } }];\n}\nconst raw = item.json;\nconst body = typeof raw === 'string' ? raw : (raw.body || raw.data || raw.text || '');\nif (!body || body.length < 100) {\n  console.log('arXiv empty body type=' + typeof raw + ' keys=' + (raw && typeof raw==='object' ? Object.keys(raw).join(',') : 'N/A'));\n  return [{ json: { _skip: true, source_id: '_empty_arxiv', content: '' } }];\n}\nconst entries = body.match(/<entry>[\\s\\S]*?<\\/entry>/g) || [];\nconst docs = [];\nfor (const entry of entries) {\n  const tm = entry.match(/<title>([\\s\\S]*?)<\\/title>/);\n  const title = tm ? tm[1].replace(/<[^>]+>/g, '').replace(/\\s+/g, ' ').trim() : '';\n  const sm = entry.match(/<summary>([\\s\\S]*?)<\\/summary>/);\n  const abstract = sm ? sm[1].replace(/<[^>]+>/g, '').replace(/\\s+/g, ' ').trim() : '';\n  const im = entry.match(/<id>([\\s\\S]*?)<\\/id>/);\n  const idFull = im ? im[1].trim() : '';\n  if (!title || !abstract || abstract.length < 50) continue;\n  const arxivId = (idFull.split('/abs/')[1] || idFull).replace(/\\s/g, '');\n  const content = 'Title: ' + title + '\\n\\nAbstract: ' + abstract + '\\n\\nSource: arXiv | ID: ' + arxivId;\n  const source_id = 'arxiv_' + arxivId.replace(/[^a-zA-Z0-9.]/g, '_').substring(0, 60);\n  docs.push({ content, source_id, pdf_url: 'https://arxiv.org/pdf/' + arxivId, filename: source_id + '.pdf', chunk_size: 1000, chunk_overlap: 100, prefer_pdf: true, pdf_ingest_mode: 'deferred' });\n}\nconsole.log('arXiv parsed:', docs.length, 'papers from', entries.length, 'entries');\nif (docs.length === 0) return [{ json: { _skip: true, source_id: '_empty_arxiv', content: '' } }];\nreturn docs.map(d => ({ json: d }));\n"
+      },
+      "id": "node-parse-arxiv",
+      "name": "Parse arXiv",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nif (item.error) {\n  console.log('S2 fetch error:', item.error.message || 'unknown');\n  return [{ json: { _skip: true, source_id: '_error_s2', content: '' } }];\n}\nconst raw = item.json;\nlet s2Data;\nif (typeof raw === 'string') {\n  try { s2Data = JSON.parse(raw); } catch(e) { console.log('S2 parse fail:', e.message); s2Data = { data: [] }; }\n} else if (raw && typeof raw === 'object') {\n  const bodyStr = raw.body || raw.data || raw.text;\n  if (typeof bodyStr === 'string') {\n    try { s2Data = JSON.parse(bodyStr); } catch(e) { s2Data = { data: [] }; }\n  } else if (bodyStr && typeof bodyStr === 'object' && Array.isArray(bodyStr.data)) {\n    s2Data = bodyStr;\n  } else {\n    s2Data = raw;\n  }\n} else {\n  s2Data = { data: [] };\n}\nconst papers = s2Data.data || [];\nconst docs = [];\nfor (const paper of papers) {\n  if (!paper.title || !paper.abstract || paper.abstract.length < 50) continue;\n  const authorsStr = (paper.authors || []).slice(0, 5).map(function(a) { return a.name; }).join(', ');\n  const content = 'Title: ' + paper.title + '\\n\\nAbstract: ' + paper.abstract + '\\n\\nSource: Semantic Scholar | Year: ' + (paper.year || 'N/A') + ' | Citations: ' + (paper.citationCount || 0) + ' | Authors: ' + authorsStr;\n  const source_id = 'ss_' + (paper.paperId || '').substring(0, 40).replace(/[^a-zA-Z0-9]/g, '_');\n  const pdf_url = paper.openAccessPdf && paper.openAccessPdf.url ? paper.openAccessPdf.url : '';\n  docs.push({ content, source_id, pdf_url, filename: source_id + '.pdf', chunk_size: 1000, chunk_overlap: 100, prefer_pdf: !!pdf_url, pdf_ingest_mode: 'deferred' });\n}\nconsole.log('S2 parsed:', docs.length, 'papers from', papers.length, 'results');\nif (docs.length === 0) return [{ json: { _skip: true, source_id: '_empty_s2', content: '' } }];\nreturn docs.map(d => ({ json: d }));\n"
+      },
+      "id": "node-parse-s2",
+      "name": "Parse Semantic Scholar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nif (item.error) {\n  console.log('KD fetch error:', item.error.message || 'unknown');\n  return [{ json: { _skip: true, source_id: '_error_kd', content: '' } }];\n}\nconst raw = item.json;\nconst body = typeof raw === 'string' ? raw : (raw.body || raw.data || raw.text || '');\nif (!body || body.length < 100) {\n  console.log('KD empty body type=' + typeof raw);\n  return [{ json: { _skip: true, source_id: '_empty_kd', content: '' } }];\n}\nconst items = body.match(/<item>[\\s\\S]*?<\\/item>/g) || [];\nconst docs = [];\nfor (const it of items) {\n  const tm = it.match(/<title>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/title>/);\n  const title = tm ? tm[1].trim() : '';\n  const dm = it.match(/<description>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/description>/);\n  const desc = dm ? dm[1].replace(/<[^>]+>/g, '').replace(/\\s+/g, ' ').trim() : '';\n  const lm = it.match(/<link>([\\s\\S]*?)<\\/link>/);\n  const link = lm ? lm[1].trim() : '';\n  if (!title || !desc || desc.length < 30) continue;\n  const content = 'Title: ' + title + '\\n\\nSummary: ' + desc + '\\n\\nSource: KDnuggets | URL: ' + link;\n  const source_id = 'kd_' + title.toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 50);\n  docs.push({ content, source_id, chunk_size: 1000, chunk_overlap: 100 });\n}\nconsole.log('KDnuggets parsed:', docs.length, 'articles from', items.length, 'items');\nif (docs.length === 0) return [{ json: { _skip: true, source_id: '_empty_kd', content: '' } }];\nreturn docs.map(d => ({ json: d }));\n"
+      },
+      "id": "node-parse-kd",
+      "name": "Parse KDnuggets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        352
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "node-merge",
+      "name": "Merge All Docs",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-has-content",
+              "leftValue": "={{ ($json.content || \"\").length }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-skip-check",
+      "name": "Skip Empty",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://vector-service:8000/upload/text",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $json.content }}"
+            },
+            {
+              "name": "source_id",
+              "value": "={{ $json.source_id }}"
+            },
+            {
+              "name": "pdf_url",
+              "value": "={{ $json.pdf_url || \"\" }}"
+            },
+            {
+              "name": "prefer_pdf",
+              "value": "={{ $json.prefer_pdf ? \"true\" : \"false\" }}"
+            },
+            {
+              "name": "pdf_ingest_mode",
+              "value": "={{ $json.pdf_ingest_mode || \"deferred\" }}"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $json.filename || \"\" }}"
+            },
+            {
+              "name": "chunk_size",
+              "value": "={{ $json.chunk_size }}"
+            },
+            {
+              "name": "chunk_overlap",
+              "value": "={{ $json.chunk_overlap }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-ingest",
+      "name": "Ingest to Vector Service",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        560,
+        64
+      ],
+      "continueOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\nif (r && (r.chunks_created !== undefined || r.status === 'ok')) {\n  console.log('Ingested ok — chunks:', r.chunks_created || 0, '| source:', r.source_id || '');\n} else {\n  console.log('Ingest error:', JSON.stringify(r).substring(0, 200));\n}\nreturn [{ json: { done: true, source_id: r && r.source_id || '', chunks: r && r.chunks_created || 0 } }];"
+      },
+      "id": "node-log-result",
+      "name": "Log Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ts = new Date().toISOString();\nconsole.log('[' + ts + '] Doc ingested ok');\nreturn [{ json: { timestamp: ts, status: 'ok' } }];"
+      },
+      "id": "node-final-summary",
+      "name": "Final Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        352
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch arXiv",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Semantic Scholar",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch KDnuggets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch arXiv": {
+      "main": [
+        [
+          {
+            "node": "Parse arXiv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Semantic Scholar": {
+      "main": [
+        [
+          {
+            "node": "Parse Semantic Scholar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch KDnuggets": {
+      "main": [
+        [
+          {
+            "node": "Parse KDnuggets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse arXiv": {
+      "main": [
+        [
+          {
+            "node": "Skip Empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Semantic Scholar": {
+      "main": [
+        [
+          {
+            "node": "Skip Empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse KDnuggets": {
+      "main": [
+        [
+          {
+            "node": "Skip Empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Empty": {
+      "main": [
+        [
+          {
+            "node": "Ingest to Vector Service",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Ingest to Vector Service": {
+      "main": [
+        [
+          {
+            "node": "Log Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Result": {
+      "main": [
+        [
+          {
+            "node": "Final Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "9c1ea134-e1aa-4028-ad45-2c1fd8a82cc1",
+  "meta": {
+    "instanceId": "738ec396937c37118292a949fd8288613e2ecc3df090bb54459bd47f7bf15102"
+  },
+  "id": "Mj52tkVtwsoF2cUd",
+  "tags": []
+}

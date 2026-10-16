@@ -1,0 +1,10 @@
+# Essential NLP Stack - Minimal requirements
+
+scikit-learn==1.8.0       # ML pipeline, TF-IDF, Logistic Regression
+nltk==3.9.2               # Tokenization, stopwords
+textblob==0.19.0          # Fast sentiment analysis
+pandas==2.3.3             # Data manipulation (optional)
+numpy==2.2.6              # Numerical operations
+pydantic>=2.5.0
+fastapi==0.104.1
+uvicorn==0.24.0

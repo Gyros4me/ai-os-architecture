@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vector Ingestion Service</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/static/style.css?v=rag-long-context-20260525d">
+</head>
+<body class="bg-light">
+
+<!-- Navbar -->
+<nav class="navbar navbar-dark bg-dark px-3 py-2">
+  <span class="navbar-brand fw-bold">
+    <i class="bi bi-database-fill-gear me-2"></i>Vector Ingestion Service
+  </span>
+  <div class="d-flex align-items-center gap-3">
+    <span class="badge bg-success" id="service-badge">Online</span>
+    <small class="text-light opacity-75" id="current-time">--:--:--</small>
+  </div>
+</nav>
+
+<div class="container-fluid py-3 px-4">
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-3" id="mainTabs">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="tab" href="#tab-dashboard">
+        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#tab-upload">
+        <i class="bi bi-cloud-upload me-1"></i>Upload
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#tab-search">
+        <i class="bi bi-search me-1"></i>Ricerca
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#tab-rag">
+        <i class="bi bi-stars me-1"></i>RAG Generation
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#tab-dlq">
+        <i class="bi bi-exclamation-triangle me-1"></i>DLQ
+        <span class="badge bg-danger ms-1" id="dlq-count">0</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- ===================== TAB: DASHBOARD ===================== -->
+    <div class="tab-pane fade show active" id="tab-dashboard">
+
+      <!-- Stats Cards -->
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6 col-xl-3">
+          <div class="card stat-card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="stat-label">Documenti</p>
+                  <h3 class="stat-value" id="total-docs">0</h3>
+                </div>
+                <div class="stat-icon text-primary"><i class="bi bi-file-earmark-text"></i></div>
+              </div>
+              <div class="progress progress-custom mt-2">
+                <div class="progress-bar bg-primary" id="docs-progress" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card stat-card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="stat-label">Chunks</p>
+                  <h3 class="stat-value" id="total-chunks">0</h3>
+                </div>
+                <div class="stat-icon text-success"><i class="bi bi-puzzle"></i></div>
+              </div>
+              <div class="progress progress-custom mt-2">
+                <div class="progress-bar bg-success" id="chunks-progress" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card stat-card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="stat-label">Throughput</p>
+                  <h3 class="stat-value" id="throughput">0</h3>
+                </div>
+                <div class="stat-icon text-warning"><i class="bi bi-lightning-charge"></i></div>
+              </div>
+              <small class="text-muted">docs/sec</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="card stat-card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="stat-label">Errori</p>
+                  <h3 class="stat-value text-danger" id="failed-count">0</h3>
+                </div>
+                <div class="stat-icon text-danger"><i class="bi bi-x-octagon"></i></div>
+              </div>
+              <small class="text-muted" id="failure-rate">0% failure rate</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <!-- Embedder Info -->
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-cpu me-1"></i>Embedder
+            </div>
+            <div class="card-body">
+              <dl class="row mb-0 small">
+                <dt class="col-6 text-muted">Modello</dt>
+                <dd class="col-6" id="embedder-model">—</dd>
+                <dt class="col-6 text-muted">Cache hit</dt>
+                <dd class="col-6" id="cache-hit-rate">—</dd>
+                <dt class="col-6 text-muted">Device</dt>
+                <dd class="col-6" id="device-info">—</dd>
+                <dt class="col-6 text-muted">Uptime</dt>
+                <dd class="col-6" id="uptime">—</dd>
+                <dt class="col-6 text-muted">Memoria</dt>
+                <dd class="col-6"><span id="memory-usage">—</span> MB</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <!-- DLQ Alert -->
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-bell me-1"></i>Stato DLQ
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+              <div id="dlq-alert" class="alert alert-success alert-custom mb-0 text-center">
+                <h2 class="alert-heading mb-0" style="font-size:2rem;">0</h2>
+                <p class="mb-0 small">No failed operations</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DLQ Chart -->
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-pie-chart me-1"></i>DLQ Status
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+              <canvas id="dlqChart" style="max-width:180px; max-height:180px;"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-activity me-1"></i>Activity Log</span>
+              <button class="btn btn-sm btn-outline-secondary" onclick="window.dashboard.refreshDashboard()">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+            <div class="card-body" style="max-height:220px; overflow-y:auto;">
+              <div id="activity-timeline">
+                <p class="text-muted small">Loading...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-dashboard -->
+
+    <!-- ===================== TAB: UPLOAD ===================== -->
+    <div class="tab-pane fade" id="tab-upload">
+      <div class="row g-3">
+
+        <!-- Left: Drag & Drop -->
+        <div class="col-lg-7">
+          <div class="card">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-upload me-1"></i>Importa Documenti
+            </div>
+            <div class="card-body">
+              <!-- Mode toggle -->
+              <div class="btn-group btn-group-sm mb-3" role="group">
+                <input type="radio" class="btn-check" name="upload-mode" id="mode-single" checked>
+                <label class="btn btn-outline-primary" for="mode-single">
+                  <i class="bi bi-file-earmark me-1"></i>Singolo
+                </label>
+                <input type="radio" class="btn-check" name="upload-mode" id="mode-batch">
+                <label class="btn btn-outline-primary" for="mode-batch">
+                  <i class="bi bi-files me-1"></i>Batch (max 20 file)
+                </label>
+              </div>
+
+              <!-- Dropzone -->
+              <div id="dropzone" class="dropzone-area mb-3">
+                <i class="bi bi-cloud-upload display-4 text-muted"></i>
+                <p class="mt-2 mb-1 fw-semibold">Trascina qui i tuoi file</p>
+                <p class="text-muted small mb-2">Supportati: PDF, TXT, CSV, JSON</p>
+                <input type="file" id="file-input" class="d-none"
+                       accept=".pdf,.txt,.csv,.json,.text">
+                <button class="btn btn-outline-primary btn-sm"
+                        onclick="document.getElementById('file-input').click()">
+                  <i class="bi bi-folder2-open me-1"></i>Sfoglia
+                </button>
+              </div>
+
+              <!-- Upload Queue -->
+              <div id="upload-queue"></div>
+
+              <!-- Batch Results -->
+              <div id="batch-results"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Parameters -->
+        <div class="col-lg-5">
+          <div class="card">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-sliders me-1"></i>Parametri di Processing
+            </div>
+            <div class="card-body">
+              <label class="form-label d-flex justify-content-between">
+                <span>Chunk Size</span>
+                <span class="text-primary fw-semibold" id="chunk-size-display">1000 chars</span>
+              </label>
+              <input type="range" class="form-range mb-3" id="chunk-size"
+                     min="100" max="5000" step="100" value="1000"
+                     oninput="updateSliderValue('chunk-size','chunk-size-display')">
+
+              <label class="form-label d-flex justify-content-between">
+                <span>Chunk Overlap</span>
+                <span class="text-primary fw-semibold" id="chunk-overlap-display">100 chars</span>
+              </label>
+              <input type="range" class="form-range mb-3" id="chunk-overlap"
+                     min="0" max="500" step="10" value="100"
+                     oninput="updateSliderValue('chunk-overlap','chunk-overlap-display')">
+
+              <div class="alert alert-info small mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                <strong>Batch upload:</strong> seleziona più file o trascinali insieme.
+                Usa l'endpoint <code>/upload/batch</code> per PDF, TXT, CSV, JSON misti.
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="card mt-3">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-bar-chart me-1"></i>Performance
+            </div>
+            <div class="card-body">
+              <button class="btn btn-outline-secondary btn-sm w-100"
+                      onclick="window.dashboard.runBenchmark()">
+                <i class="bi bi-play-circle me-1"></i>Run Benchmark
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-upload -->
+
+    <!-- ===================== TAB: RICERCA ===================== -->
+    <div class="tab-pane fade" id="tab-search">
+      <div class="row g-3">
+
+        <!-- Search Controls -->
+        <div class="col-lg-4 col-xl-3">
+          <div class="card">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-funnel me-1"></i>Filtri Ricerca
+            </div>
+            <div class="card-body">
+
+              <!-- Query -->
+              <label class="form-label fw-semibold">Query</label>
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" id="search-query"
+                       placeholder="Cerca nel corpus...">
+                <button class="btn btn-primary" onclick="window.dashboard.performSearch()">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+              <div class="form-text mb-3 text-muted small">
+                <i class="bi bi-lightning me-1"></i>Ricerca live attiva (400ms)
+              </div>
+
+              <!-- N Results -->
+              <label class="form-label">Risultati max</label>
+              <select class="form-select form-select-sm mb-3" id="results-count">
+                <option value="3">3</option>
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+
+              <!-- Source Filter -->
+              <label class="form-label d-flex justify-content-between align-items-center">
+                <span>Sorgente</span>
+                <button class="btn btn-link btn-sm p-0 text-muted" title="Aggiorna sorgenti"
+                        onclick="window.dashboard.loadSources()">
+                  <i class="bi bi-arrow-clockwise"></i>
+                </button>
+              </label>
+              <select class="form-select form-select-sm mb-3" id="source-filter">
+                <option value="">Tutte le sorgenti</option>
+              </select>
+
+              <!-- Similarity Slider -->
+              <label class="form-label d-flex justify-content-between">
+                <span>Similarità minima</span>
+                <span class="text-primary fw-semibold" id="min-similarity-display">0%</span>
+              </label>
+              <input type="range" class="form-range mb-3" id="min-similarity"
+                     min="0" max="100" step="5" value="0"
+                     oninput="updateSliderValue('min-similarity','min-similarity-display',true)">
+
+              <!-- Re-ranker Toggle -->
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="use-reranker">
+                <label class="form-check-label" for="use-reranker">
+                  Re-ranking avanzato
+                  <i class="bi bi-info-circle text-muted ms-1"
+                     title="Usa cross-encoder ms-marco per re-ordinare i risultati. Più preciso, leggermente più lento."></i>
+                </label>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Results -->
+        <div class="col-lg-8 col-xl-9">
+          <div class="card">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-list-ul me-1"></i>Risultati</span>
+              <span class="badge bg-secondary" id="results-badge">—</span>
+            </div>
+            <div class="card-body" style="min-height:400px;">
+              <div id="search-results">
+                <div class="text-center py-5 text-muted">
+                  <i class="bi bi-search display-4"></i>
+                  <p class="mt-3">Inserisci una query per iniziare la ricerca semantica</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-search -->
+
+    <!-- ===================== TAB: RAG GENERATION ===================== -->
+    <div class="tab-pane fade" id="tab-rag">
+      <div class="row g-3">
+
+        <!-- Controls -->
+        <div class="col-lg-4 col-xl-3">
+          <div class="card">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-sliders me-1"></i>Parametri
+            </div>
+            <div class="card-body">
+              <label class="form-label fw-semibold">Query</label>
+              <textarea class="form-control mb-3" id="rag-query" rows="3"
+                        placeholder="Fai una domanda al corpus..."></textarea>
+
+              <label class="form-label d-flex justify-content-between">
+                <span>Chunks da recuperare</span>
+                <span class="text-primary fw-semibold" id="rag-n-display">48</span>
+              </label>
+              <input type="range" class="form-range mb-3" id="rag-n-results"
+                     min="1" max="120" step="1" value="48"
+                     oninput="document.getElementById('rag-n-display').textContent=this.value">
+
+              <label class="form-label d-flex justify-content-between">
+                <span>Temperature</span>
+                <span class="text-primary fw-semibold" id="rag-temp-display">0.7</span>
+              </label>
+              <input type="range" class="form-range mb-3" id="rag-temperature"
+                     min="0" max="1.8" step="0.1" value="0.7"
+                     oninput="document.getElementById('rag-temp-display').textContent=parseFloat(this.value).toFixed(1)">
+
+              <label class="form-label d-flex justify-content-between">
+                <span>Max tokens</span>
+                <span class="text-primary fw-semibold" id="rag-tokens-display">12288</span>
+              </label>
+              <input type="range" class="form-range mb-3" id="rag-max-tokens"
+                     min="512" max="49152" step="512" value="12288"
+                     oninput="document.getElementById('rag-tokens-display').textContent=this.value">
+
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary" id="rag-generate-btn"
+                        onclick="window.dashboard.generateRAG()">
+                  <i class="bi bi-stars me-1"></i>Genera risposta
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        onclick="window.dashboard.stopRAG()">
+                  <i class="bi bi-stop-circle me-1"></i>Interrompi
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output -->
+        <div class="col-lg-8 col-xl-9">
+          <div class="card h-100">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-chat-text me-1"></i>Risposta Magellano</span>
+              <div id="rag-status-badge" class="badge bg-secondary">In attesa</div>
+            </div>
+            <div class="card-body d-flex flex-column">
+              <!-- Tier indicator -->
+              <div id="rag-tier-info" class="d-flex gap-2 mb-3 d-none">
+                <span class="badge bg-primary" id="rag-tier0-badge">
+                  <i class="bi bi-database me-1"></i>Tier-0: 0 chunks
+                </span>
+                <span class="badge bg-purple" id="rag-tier2-badge" style="background:#6f42c1;">
+                  <i class="bi bi-stars me-1"></i>Tier-2: Magellano
+                </span>
+              </div>
+
+              <!-- Retrieved sources -->
+              <div id="rag-source-panel" class="rag-source-panel d-none mb-3">
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                  <span class="small fw-semibold text-secondary">
+                    <i class="bi bi-journal-text me-1"></i>Fonti recuperate
+                  </span>
+                  <span class="badge bg-light text-dark border" id="rag-source-count">0 fonti</span>
+                </div>
+                <div id="rag-source-list" class="rag-source-list mt-2"></div>
+              </div>
+
+              <!-- Visual assets -->
+              <div id="rag-visual-panel" class="rag-visual-panel d-none mb-3">
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                  <span class="small fw-semibold text-secondary">
+                    <i class="bi bi-image me-1"></i>Asset visuali
+                  </span>
+                  <span class="badge bg-light text-dark border" id="rag-visual-count">0 asset</span>
+                </div>
+                <div id="rag-visual-list" class="rag-visual-list mt-2"></div>
+              </div>
+
+              <!-- Response area -->
+              <div id="rag-response" class="rag-response flex-grow-1"
+                   style="min-height:460px; max-height:calc(100vh - 180px); resize:vertical; white-space:pre-wrap; font-family:monospace;
+                          font-size:.9rem; padding:1rem; background:#f8f9fa; border-radius:.4rem;
+                          overflow-y:auto; line-height:1.6;">
+                <span class="text-muted">La risposta apparirà qui token per token...</span>
+              </div>
+
+              <!-- Fallback notice -->
+              <div id="rag-fallback-notice" class="alert alert-warning small mt-2 d-none">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                <strong>Magellano non raggiungibile</strong> (Mac Mini spento o ancora in training).
+                I risultati Tier-0 (ricerca semantica) sono comunque disponibili nel tab Ricerca.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-rag -->
+
+    <!-- ===================== TAB: DLQ ===================== -->
+    <div class="tab-pane fade" id="tab-dlq">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-exclamation-triangle me-1"></i>Dead Letter Queue
+            </div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <button class="btn btn-outline-primary" onclick="window.dashboard.viewDLQ()">
+                  <i class="bi bi-eye me-1"></i>Visualizza failed chunks
+                </button>
+                <button class="btn btn-outline-warning" onclick="window.dashboard.retryAllFailed()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Retry tutti
+                </button>
+                <button class="btn btn-outline-danger" onclick="window.dashboard.clearDLQ()">
+                  <i class="bi bi-trash me-1"></i>Clear permanent failures
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-header fw-semibold">
+              <i class="bi bi-pie-chart me-1"></i>DLQ Breakdown
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center" style="min-height:200px;">
+              <canvas id="dlqChart2" style="max-width:180px; max-height:180px;"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header fw-semibold">Dettagli</div>
+            <div class="card-body" id="dlq-details">
+              <p class="text-muted small">Premi "Visualizza failed chunks" per vedere i dettagli.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-dlq -->
+
+  </div><!-- /tab-content -->
+</div><!-- /container -->
+
+<!-- Upload Progress Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title">Caricamento in corso</h6>
+      </div>
+      <div class="modal-body">
+        <p class="small mb-1" id="upload-filename">—</p>
+        <div class="progress">
+          <div class="progress-bar progress-bar-striped progress-bar-animated"
+               id="upload-progress-bar" style="width:0%"></div>
+        </div>
+        <p class="small text-muted mt-2 mb-0" id="upload-status">Avvio...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/app.js?v=rag-long-context-20260525d"></script>
+</body>
+</html>

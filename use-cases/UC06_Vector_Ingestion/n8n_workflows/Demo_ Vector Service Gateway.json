@@ -1,0 +1,84 @@
+{
+  "name": "Demo: Vector Service Gateway",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "demo-health",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4bba7434-52e1-4a20-91b8-8439a2a3b96f",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "demo-vector-check"
+    },
+    {
+      "parameters": {
+        "url": "http://vector-service:8000/health",
+        "options": {}
+      },
+      "id": "e0ed7b9b-b6f8-47d2-9d2b-0513001c5038",
+      "name": "Call Vector Service",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        208,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f1308999-2ecd-48d4-bf3e-036d77477b14",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        400,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call Vector Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Vector Service": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "59e7ad13-a718-4d66-a6b7-d4af0d2da9fd",
+  "meta": {
+    "instanceId": "738ec396937c37118292a949fd8288613e2ecc3df090bb54459bd47f7bf15102"
+  },
+  "id": "Be-2npNJKeAqDQ7j9LDJz",
+  "tags": []
+}

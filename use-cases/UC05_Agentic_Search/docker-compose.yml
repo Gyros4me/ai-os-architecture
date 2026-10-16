@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Agentic Search API
+  agentic-search-api:
+    build: .
+    container_name: agentic-search
+    ports:
+      - "8000:8000"
+    environment:
+      - BOOKS_CSV_PATH=/app/data/books.csv
+      - CONTEXT_TTL_MINUTES=30
+      - FUZZY_THRESHOLD=60.0
+    volumes:
+      - ./data:/app/data:ro  # Read-only data mount
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - agentic-search-network
+
+  # Redis (opzionale - per context distribuito)
+  # Decommentare se si vuole context persistence
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: agentic-search-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - agentic-search-network
+  #   restart: unless-stopped
+
+  # Prometheus (opzionale - per monitoring)
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: agentic-search-prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prometheus-data:/prometheus
+  #   networks:
+  #     - agentic-search-network
+  #   restart: unless-stopped
+
+  # Grafana (opzionale - per dashboard)
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: agentic-search-grafana
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - GF_SECURITY_ADMIN_PASSWORD=admin
+  #   volumes:
+  #     - grafana-data:/var/lib/grafana
+  #   networks:
+  #     - agentic-search-network
+  #   restart: unless-stopped
+
+networks:
+  agentic-search-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  prometheus-data:
+  grafana-data:

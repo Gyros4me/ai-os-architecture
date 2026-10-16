@@ -1,0 +1,35 @@
+{
+  "name": "Vector Service Health Check",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "health-check"
+    },
+    {
+      "parameters": {
+        "url": "http://vector-service:8000/health",
+        "options": {}
+      },
+      "id": "http-request",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "HTTP Request", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "id": "health-check-workflow",
+  "createdAt": "2026-01-28T09:00:00.000Z",
+  "updatedAt": "2026-01-28T09:00:00.000Z"
+}

@@ -1,0 +1,121 @@
+services:
+  vector-service:
+    build: .
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+      - ./static:/app/static
+      - ./tests:/app/tests
+    environment:
+      - PYTHONPATH=/app:/app/src
+      - CHROMA_DB_PATH=/app/data/chroma_db
+      - DLQ_DB_PATH=/app/data/dlq.db
+      - LOG_LEVEL=INFO
+      # Magellano Tier-2 (generation server). Set MAGELLANO_URL in .env to its LAN address.
+      # Default assumes it runs on the Docker host.
+      - MAGELLANO_URL=${MAGELLANO_URL:-http://host.docker.internal:8004}
+      - MAGELLANO_TIMEOUT=${MAGELLANO_TIMEOUT:-240.0}
+      - MAGELLANO_HEALTH_TIMEOUT=${MAGELLANO_HEALTH_TIMEOUT:-1.5}
+      - MAGELLANO_HEALTH_TTL=${MAGELLANO_HEALTH_TTL:-10.0}
+      - MAGELLANO_MAX_TOKENS_CAP=${MAGELLANO_MAX_TOKENS_CAP:-49152}
+      - MAGELLANO_RAG_MAX_CONTEXT_CHUNKS=${MAGELLANO_RAG_MAX_CONTEXT_CHUNKS:-96}
+      - MAGELLANO_RAG_CHUNK_CHARS=${MAGELLANO_RAG_CHUNK_CHARS:-4200}
+      - MAGELLANO_RAG_CONTEXT_TOTAL_CHARS=${MAGELLANO_RAG_CONTEXT_TOTAL_CHARS:-420000}
+      - MAGELLANO_RAG_STRUCTURED_CHARS=${MAGELLANO_RAG_STRUCTURED_CHARS:-12000}
+      - MAGELLANO_RAG_TEMPERATURE_CAP=${MAGELLANO_RAG_TEMPERATURE_CAP:-1.8}
+      - RAG_MAX_RETRIEVAL_CHUNKS=${RAG_MAX_RETRIEVAL_CHUNKS:-120}
+      - RAG_DEFAULT_RETRIEVAL_CHUNKS=${RAG_DEFAULT_RETRIEVAL_CHUNKS:-48}
+      - RAG_GENERATION_CONTEXT_CHUNKS=${RAG_GENERATION_CONTEXT_CHUNKS:-96}
+      - RAG_MAX_TOKENS=${RAG_MAX_TOKENS:-49152}
+      - RAG_DEFAULT_MAX_TOKENS=${RAG_DEFAULT_MAX_TOKENS:-12288}
+      - RAG_MAX_TEMPERATURE=${RAG_MAX_TEMPERATURE:-1.8}
+      # Visual enrichment for PDF/table/formula RAG assets
+      - VISUAL_EXPORT_ROOT=${VISUAL_EXPORT_ROOT:-/app/data/visual}
+      - VISUAL_ASSET_URL_BASE=${VISUAL_ASSET_URL_BASE:-/visual/asset?path=}
+      - VISUAL_ASSET_ROOTS=${VISUAL_ASSET_ROOTS:-/app/data/visual,/app/static,/app/data,/app/assets,/app/uploads}
+      - MAGELLANO_VISUAL_ASSET_ROOT=${MAGELLANO_VISUAL_ASSET_ROOT:-}
+      - PDF_EXTRACT_PAGE_IMAGES=${PDF_EXTRACT_PAGE_IMAGES:-true}
+      - PDF_PAGE_IMAGE_DPI=${PDF_PAGE_IMAGE_DPI:-140}
+      - PDF_PAGE_IMAGE_MAX_PAGES=${PDF_PAGE_IMAGE_MAX_PAGES:-250}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      sh -c "sleep 5 &&
+             uvicorn src.api.main:app --host 0.0.0.0 --port 8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - rag-network
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: vector-ingestion-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_PROTOCOL=http
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_EDITOR_BASE_URL=http://localhost:5678
+      - WEBHOOK_URL=http://localhost:5678
+      - GENERIC_TIMEZONE=Europe/Rome
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_AUTH_ACTIVE:-false}
+      - N8N_BASIC_AUTH_USER=${N8N_AUTH_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_AUTH_PASSWORD:-changeme}
+      - N8N_METRICS=false
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - NODE_FUNCTION_ALLOW_BUILTIN=*
+      - NODE_FUNCTION_ALLOW_EXTERNAL=*
+      - N8N_RUNNERS_MAX_OLD_SPACE_SIZE=4096
+      - N8N_EXECUTION_TIMEOUT=300000
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - S2_API_KEY=${SEMANTIC_SCHOLAR_API_KEY:-}
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+      - ./n8n_workflows:/home/node/.n8n/workflows
+      - ./n8n_logs:/home/node/logs
+    networks:
+      - rag-network
+    restart: unless-stopped
+    depends_on:
+      vector-service:
+        condition: service_healthy
+
+  # Scientific reservoir — fetcher schedulato
+  # Modalità integrata: posta su /upload/text del Vector Service.
+  # Per uso standalone: docker compose run scientific-reservoir python /app/src/fetcher.py fetch --standalone
+  scientific-reservoir:
+    build:
+      context: ./scientific_reservoir
+      dockerfile: Dockerfile
+    container_name: scientific-reservoir
+    volumes:
+      - ${SCIENTIFIC_RESERVOIR:-./scientific_reservoir_data}:/reservoir
+    environment:
+      - SCIENTIFIC_RESERVOIR=/reservoir
+      - VECTOR_SERVICE_URL=http://vector-service:8000
+      - MAGELLANO_SERVICE_URL=${MAGELLANO_URL:-http://host.docker.internal:8004}
+      - S2_API_KEY=${SEMANTIC_SCHOLAR_API_KEY:-}
+      - SCIENTIFIC_INGEST_PDFS=${SCIENTIFIC_INGEST_PDFS:-true}
+      - SCIENTIFIC_PDF_FALLBACK_TEXT=${SCIENTIFIC_PDF_FALLBACK_TEXT:-true}
+    depends_on:
+      vector-service:
+        condition: service_healthy
+    networks:
+      - rag-network
+    profiles:
+      - reservoir   # avvia solo con: docker compose --profile reservoir up
+    # Avvio manuale: docker compose --profile reservoir run scientific-reservoir
+    # Cron notturno (2:00 AM):
+    # command: sh -c "echo '0 2 * * * python /app/src/fetcher.py full >> /reservoir/fetch.log 2>&1' | crontab - && crond -f"
+
+networks:
+  rag-network:
+    driver: bridge

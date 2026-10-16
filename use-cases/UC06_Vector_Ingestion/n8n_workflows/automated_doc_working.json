@@ -1,0 +1,297 @@
+{
+  "name": "📚 Automated Document Knowledge Base",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "76c34d5c-362d-42b0-aaad-a54f3493deb2",
+      "name": "Schedule Trigger (Every Hour)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -656,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simula risposta API documenti per demo\nconst mockDocuments = [\n  {\n    id: 'doc_001',\n    title: 'Machine Learning Basics',\n    content: 'Machine learning is a subset of artificial intelligence that enables computers to learn from data without being explicitly programmed.',\n    category: 'AI',\n    language: 'en',\n    source: 'internal-wiki'\n  },\n  {\n    id: 'doc_002',\n    title: 'Vector Databases',\n    content: 'Vector databases store high-dimensional vectors representing embeddings of text, images, or other data types for semantic search.',\n    category: 'Database',\n    language: 'en',\n    source: 'tech-docs'\n  }\n];\n\nconsole.log(`📄 Generated ${mockDocuments.length} mock documents`);\nreturn mockDocuments.map(doc => ({json: doc}));"
+      },
+      "id": "b241345e-bc9b-4495-92bd-ae12cead91ab",
+      "name": "Generate Mock Documents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "556bd3df-bad4-4c5c-b1ec-9cbed3ddae1a",
+      "name": "Loop Through Documents",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -224,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// DEBUG: Log what we're sending\nconst currentDoc = $input[0].json;\nconsole.log('📤 Processing document:', currentDoc.id);\n\n// Prepare the payload\nconst payload = {\n  content: currentDoc.content,\n  metadata: {\n    document_id: currentDoc.id,\n    title: currentDoc.title,\n    category: currentDoc.category,\n    language: currentDoc.language,\n    source: currentDoc.source || 'automated_sync',\n    ingestion_time: new Date().toISOString()\n  }\n};\n\nreturn [{ json: payload }];"
+      },
+      "id": "902e50fa-97b9-4b87-9a4a-09d541cab7b0",
+      "name": "Prepare Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://vector-service:8000/upload/text",
+        "options": {}
+      },
+      "id": "bafd7b2c-8b01-44bc-9c02-325e2d9913f1",
+      "name": "Ingest to Vector Service",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        224,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "condition-success",
+              "leftValue": "={{ $json.message }}",
+              "rightValue": "Text ingested successfully",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4e244339-3371-4f34-8865-d26ed231ad19",
+      "name": "Check Ingestion Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Success handler\nconst response = $input[0].json;\nconsole.log('✅ Document ingested:', response.id || response.document_id);\n\nconst result = {\n  status: 'SUCCESS',\n  document_id: response.id || response.document_id || 'unknown',\n  message: 'Document successfully ingested',\n  timestamp: new Date().toISOString(),\n  raw_response: response\n};\n\nreturn [{ json: result }];"
+      },
+      "id": "7e74d174-d380-40da-aeba-0e15184ef067",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Error handler\nconst response = $input[0].json;\nconsole.error('❌ Document ingestion failed:', response.error || response.message);\n\nconst result = {\n  status: 'ERROR',\n  document_id: 'unknown',\n  error_message: response.error || response.message || 'Unknown error',\n  timestamp: new Date().toISOString(),\n  raw_response: response\n};\n\nreturn [{ json: result }];"
+      },
+      "id": "abf877fa-d269-4ced-97f0-2d53c7552850",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simple logging and pass-through\nconst data = $input[0].json;\nconsole.log('📝 Processed:', data.document_id || data.status);\n\n// Just pass the data through\nreturn [{ json: data }];"
+      },
+      "id": "14261019-bdbf-445a-b435-f013865ca5c0",
+      "name": "Format Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Final summary - activated when loop is done\n// This node only runs once when all documents are processed\nconst allItems = $input.all();\nconsole.log('📊 FINAL SUMMARY - Total items:', allItems.length);\n\nconst successCount = allItems.filter(item => item.json.status === 'SUCCESS').length;\nconst errorCount = allItems.filter(item => item.json.status === 'ERROR').length;\n\nconst summary = {\n  workflow: 'Automated Document Knowledge Base',\n  execution_time: new Date().toISOString(),\n  results: {\n    total: allItems.length,\n    success: successCount,\n    error: errorCount,\n    success_rate: allItems.length > 0 ? `${(successCount / allItems.length * 100).toFixed(1)}%` : '0%'\n  },\n  message: `Processed ${allItems.length} documents. Success: ${successCount}, Errors: ${errorCount}`,\n  items: allItems.map(item => item.json)\n};\n\nconsole.log('🏁 Final summary:', JSON.stringify(summary, null, 2));\nreturn [{ json: summary }];"
+      },
+      "id": "d689fb14-ec11-4946-9a37-bc885132d83f",
+      "name": "Generate Final Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        160
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger (Every Hour)": {
+      "main": [
+        [
+          {
+            "node": "Generate Mock Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Mock Documents": {
+      "main": [
+        [
+          {
+            "node": "Loop Through Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Through Documents": {
+      "main": [
+        [
+          {
+            "node": "Prepare Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Final Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Payload": {
+      "main": [
+        [
+          {
+            "node": "Ingest to Vector Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingest to Vector Service": {
+      "main": [
+        [
+          {
+            "node": "Check Ingestion Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Ingestion Success": {
+      "main": [
+        [
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Success": {
+      "main": [
+        [
+          {
+            "node": "Format Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error": {
+      "main": [
+        [
+          {
+            "node": "Format Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Report": {
+      "main": [
+        [
+          {
+            "node": "Generate Final Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "42e631a6-7a64-4aa7-95be-47720a19ef5a",
+  "meta": {
+    "instanceId": "738ec396937c37118292a949fd8288613e2ecc3df090bb54459bd47f7bf15102"
+  },
+  "id": "OsMslPatzNytYUcYmtWVN",
+  "tags": [
+    {
+      "updatedAt": "2026-01-28T13:53:29.599Z",
+      "createdAt": "2026-01-28T13:53:29.599Z",
+      "id": "toy1b4FeNGIxzJoM",
+      "name": "automation"
+    },
+    {
+      "updatedAt": "2026-01-28T13:53:29.643Z",
+      "createdAt": "2026-01-28T13:53:29.643Z",
+      "id": "xFcPMi8HgnnAJSgl",
+      "name": "vector-service"
+    }
+  ]
+}

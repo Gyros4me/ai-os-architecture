@@ -1,0 +1,43 @@
+{
+  "client_a": {
+    "name": "Emotion Detection Client",
+    "model": {
+      "type": "mock_emotion",
+      "version": "1.0.0",
+      "classes": ["contento", "triste", "alterato"]
+    },
+    "preprocessing": ["lowercase", "strip_punctuation"],
+    "postprocessing": ["add_confidence_score"],
+    "rules": []
+  },
+  "client_b": {
+    "name": "Ticket Classification Client",
+    "model": {
+      "type": "mock_ticket",
+      "version": "2.1.0",
+      "classes": ["vendite", "supporto", "generico"]
+    },
+    "preprocessing": ["lowercase"],
+    "postprocessing": [],
+    "rules": [
+      {
+        "name": "refund_to_support",
+        "condition": "contains_word",
+        "params": {"word": "rimborso", "if_predicted": "vendite"},
+        "action": "override",
+        "new_value": "supporto"
+      },
+      {
+        "name": "short_generic_to_support",
+        "condition": "short_text_with_keywords",
+        "params": {
+          "max_words": 20,
+          "keywords": ["ciao", "arrivederci"],
+          "if_predicted": "generico"
+        },
+        "action": "override",
+        "new_value": "supporto"
+      }
+    ]
+  }
+}

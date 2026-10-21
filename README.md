@@ -5,6 +5,20 @@
 An AI-native Operating System that treats agents as kernel processes, not chat prompts.
 
 ---
+> **Status (2026-10-19) — read this first**
+>
+> This repository is a **reference architecture and experimental PoC**, not a production runtime and not a customer-facing product.
+>
+> **0xMeridian** = Planner / Executor / Critic / Memory pattern, TDD, ADRs, and a PoC kernel. Tutorial sections below are **descriptive** (target UX), not logs of a live run.
+>
+> **Magellano** is a **model family**, not a single binary in production:
+> - **Repo snapshot:** first setup **3.3B** (50k vocab)
+> - **LIVE on the training node:** dense base **~808M** (run h2 in progress — not interrupted for demos)
+> - **Programme target:** **5.2B** dual-gear (not the current checkpoint)
+>
+> There is **no** live multimodal serving (no VLM service, no 3-instance LLM+VLM+RAG, no quoted decode tok/s / TTFT / watt as measured results). Inference numbers in design docs are **feasibility profiles**, not benchmarks.
+>
+> Issues and PRs: architecture and eval protocol. Do not treat CLI snippets in the tutorial as a supported product interface.
 
 ## Architecture Overview — TDD v5.1
 
